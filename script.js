@@ -291,44 +291,59 @@ function showConfirmPopup(e) {
 function closeConfirm() { document.getElementById('confirm-popup').classList.add('hidden'); }
 
 async function finalSubmit() {
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxDsJriOEgPg8y__-K4hKQ5ytwjL4-6cNBeuYU3gShDKDAMMiRWWxqwPCnTS30fL7V_bA/exec'; // <--- เปลี่ยน URL ตรงนี้
+    // 1. นำ URL ที่ได้จาก Apps Script มาวางตรงนี้ !!!
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxxLjDmnkViPdqhZdMII7M3TD91ERk69PoZvtqxvHF94ozmDIoqRsNlkz6qT21LCnCDmQ/exec'; 
+
     const btnConfirm = document.getElementById('btn-confirm-text');
     
-    // ดึงข้อมูลเตรียมส่ง
+    // 2. รวบรวมข้อมูลจากฟอร์มเพื่อเตรียมส่ง
     const formData = {
         fullName: document.getElementById('fullName').value,
-        gender: document.querySelector('input[name="gender"]:checked').value || "ไม่ระบุ",
+        gender: document.querySelector('input[name="gender"]:checked')?.value || "ไม่ระบุ",
         dob: document.getElementById('res-dob').innerText,
         phone: document.getElementById('phone').value,
         address: document.getElementById('res-address').innerText
     };
 
-    btnConfirm.innerText = "กำลังประมวลผล...";
+    // เปลี่ยนปุ่มเป็นสถานะกำลังโหลด
+    btnConfirm.innerText = "กำลังตรวจสอบข้อมูล...";
     btnConfirm.disabled = true;
 
     try {
-        // ใช้ fetch แบบส่งข้อมูลทางเดียวเพื่อความชัวร์ (no-cors)
-        fetch(scriptURL, {
+        // 3. ส่งข้อมูลไปที่ Google Sheets (ใช้ text/plain เพื่อทะลวงระบบบล็อกของ Google)
+        const response = await fetch(scriptURL, {
             method: 'POST',
-            mode: 'no-cors', 
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(formData)
         });
 
-        // เนื่องจาก no-cors เราจะเช็คค่าที่ตอบกลับมาไม่ได้ 
-        // แต่ข้อมูลจะ "ถูกส่งออกไปแน่นอน"
-        // ให้เราข้ามไปหน้า Success เลย
-        
-        setTimeout(() => {
+        // 4. รออ่านคำตอบจาก Google Sheets ('exists' หรือ 'success')
+        const result = await response.text();
+
+        if (result === "exists") {
+            // กรณีเบอร์ซ้ำ!
+            alert("❌ เบอร์โทรศัพท์นี้เคยสมัครสมาชิกไปแล้ว ไม่สามารถสมัครซ้ำได้ครับ");
+            btnConfirm.innerText = "ตกลง";
+            btnConfirm.disabled = false;
+            
+        } else if (result === "success") {
+            // กรณีสำเร็จ! พาไปหน้าบัตรสมาชิก
             const card = document.getElementById('membershipCard');
             closeConfirm();
             document.getElementById('registration-screen').classList.add('hidden');
             document.getElementById('success-screen').classList.remove('hidden');
             document.getElementById('final-card-place').appendChild(card);
-        }, 1500); // รอ 1.5 วินาทีเพื่อให้มั่นใจว่าข้อมูลส่งถึง Google
+            
+        } else {
+            // กรณีระบบหลังบ้านขัดข้อง
+            alert("⚠️ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง");
+            btnConfirm.innerText = "ตกลง";
+            btnConfirm.disabled = false;
+        }
 
     } catch (error) {
-        alert("การเชื่อมต่อขัดข้อง กรุณาลองใหม่");
+        console.error('Fetch Error:', error);
+        alert("🔌 สัญญาณอินเทอร์เน็ตขัดข้อง หรือเชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
         btnConfirm.innerText = "ตกลง";
         btnConfirm.disabled = false;
     }
