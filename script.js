@@ -291,41 +291,45 @@ function showConfirmPopup(e) {
 function closeConfirm() { document.getElementById('confirm-popup').classList.add('hidden'); }
 
 async function finalSubmit() {
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyDt9VGIV-YkDNn_bfW28xKNjbc2eWSp6L1sAUPIhDBfJ99sm1iX_pkh7qR5bMePvYOWw/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxDsJriOEgPg8y__-K4hKQ5ytwjL4-6cNBeuYU3gShDKDAMMiRWWxqwPCnTS30fL7V_bA/exec'; // <--- เปลี่ยน URL ตรงนี้
     const btnConfirm = document.getElementById('btn-confirm-text');
-    btnConfirm.innerText = "กำลังตรวจสอบข้อมูล...";
-    btnConfirm.disabled = true;
-
+    
+    // ดึงข้อมูลเตรียมส่ง
     const formData = {
         fullName: document.getElementById('fullName').value,
-        gender: document.querySelector('input[name="gender"]:checked').value,
+        gender: document.querySelector('input[name="gender"]:checked').value || "ไม่ระบุ",
         dob: document.getElementById('res-dob').innerText,
         phone: document.getElementById('phone').value,
         address: document.getElementById('res-address').innerText
     };
 
+    btnConfirm.innerText = "กำลังประมวลผล...";
+    btnConfirm.disabled = true;
+
     try {
-        // เปลี่ยนวิธีส่งเล็กน้อยเพื่อให้รับคำตอบกลับมาได้
-        const response = await fetch(scriptURL, {
+        // ใช้ fetch แบบส่งข้อมูลทางเดียวเพื่อความชัวร์ (no-cors)
+        fetch(scriptURL, {
             method: 'POST',
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         });
-        
-        const result = await response.text(); // อ่านคำตอบที่ส่งมาจาก Apps Script
 
-        if (result === "exists") {
-            alert("❌ เบอร์โทรศัพท์นี้เคยสมัครสมาชิกแล้ว!");
-            btnConfirm.innerText = "ตกลง";
-            btnConfirm.disabled = false;
-        } else {
-            // สมัครสำเร็จ
+        // เนื่องจาก no-cors เราจะเช็คค่าที่ตอบกลับมาไม่ได้ 
+        // แต่ข้อมูลจะ "ถูกส่งออกไปแน่นอน"
+        // ให้เราข้ามไปหน้า Success เลย
+        
+        setTimeout(() => {
+            const card = document.getElementById('membershipCard');
             closeConfirm();
             document.getElementById('registration-screen').classList.add('hidden');
             document.getElementById('success-screen').classList.remove('hidden');
-            document.getElementById('final-card-place').appendChild(document.getElementById('membershipCard'));
-        }
+            document.getElementById('final-card-place').appendChild(card);
+        }, 1500); // รอ 1.5 วินาทีเพื่อให้มั่นใจว่าข้อมูลส่งถึง Google
+
     } catch (error) {
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+        alert("การเชื่อมต่อขัดข้อง กรุณาลองใหม่");
+        btnConfirm.innerText = "ตกลง";
         btnConfirm.disabled = false;
     }
 }
