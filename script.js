@@ -292,7 +292,7 @@ function closeConfirm() { document.getElementById('confirm-popup').classList.add
 
 async function finalSubmit() {
     // 1. นำ URL ที่ได้จาก Apps Script มาวางตรงนี้ !!!
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxxLjDmnkViPdqhZdMII7M3TD91ERk69PoZvtqxvHF94ozmDIoqRsNlkz6qT21LCnCDmQ/exec'; 
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyWDK4lJR4VPDfSQaPLEHLQdK6HmCg9vf_-0cSzhgKzMThII_csRil2bitHJ0jAh1uLrA/exec'; 
 
     const btnConfirm = document.getElementById('btn-confirm-text');
     
