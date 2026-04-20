@@ -310,7 +310,7 @@ async function finalSubmit() {
     btnConfirm.disabled = true;
 
     try {
-        // 3. ส่งข้อมูลไปที่ Google Sheets (ใช้ text/plain เพื่อทะลวงระบบบล็อกของ Google)
+        // 3. ส่งข้อมูลไปที่ Google Sheets (เอา no-cors ออกแล้ว)
         const response = await fetch(scriptURL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
