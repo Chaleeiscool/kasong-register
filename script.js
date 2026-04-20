@@ -1,6 +1,6 @@
 // --- 1. ZIP CODE DATABASE INITIALIZATION ---
 // We start with an empty object and fill it from the external JSON file
-let zipDatabase = {};
+let zipDatabase = [];
 
 // Background loader: Fetches the full database without freezing the UI
 async function loadZipDatabase() {
