@@ -289,6 +289,49 @@ function showConfirmPopup(e) {
 }
 
 function closeConfirm() { document.getElementById('confirm-popup').classList.add('hidden'); }
-function finalSubmit() { const card = document.getElementById('membershipCard'); closeConfirm(); document.getElementById('registration-screen').classList.add('hidden'); document.getElementById('success-screen').classList.remove('hidden'); document.getElementById('final-card-place').appendChild(card); }
+
+async function finalSubmit() {
+    // 1. ใส่ URL ที่ก๊อปปี้มาจาก Google Apps Script ตรงนี้
+    const scriptURL = 'https://script.google.com/macros/s/AKfycby_yYBCnjNKZKuuWkyM7WXNGuWZzLpGFaJ2lfsdsTH6JJ_69n1iUlVDDYNAR9xUNYEOQQ/exec';
+
+    // 2. รวบรวมข้อมูลจากฟอร์ม
+    const formData = {
+        fullName: document.getElementById('fullName').value,
+        gender: document.querySelector('input[name="gender"]:checked').value,
+        dob: document.getElementById('res-dob').innerText, // ใช้วันเกิดที่จัดฟอร์แมตแล้วจากหน้าคอนเฟิร์ม
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('res-address').innerText // ใช้ที่อยู่เต็มจากหน้าคอนเฟิร์ม
+    };
+
+    // แสดงสถานะกำลังโหลด (เปลี่ยนข้อความปุ่ม)
+    const btnConfirm = document.getElementById('btn-confirm-text');
+    const originalText = btnConfirm.innerText;
+    btnConfirm.innerText = "กำลังบันทึกข้อมูล...";
+    btnConfirm.disabled = true;
+
+    try {
+        // 3. ส่งข้อมูลไปที่ Google Sheets (Backend)
+        await fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors', // สำคัญมากสำหรับ Google Apps Script
+            cache: 'no-cache',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        // 4. เมื่อส่งสำเร็จ ให้แสดงหน้าจอ Success เหมือนเดิม
+        const card = document.getElementById('membershipCard');
+        closeConfirm();
+        document.getElementById('registration-screen').classList.add('hidden');
+        document.getElementById('success-screen').classList.remove('hidden');
+        document.getElementById('final-card-place').appendChild(card);
+
+    } catch (error) {
+        console.error('Error!', error.message);
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อระบบหลังบ้าน');
+        btnConfirm.innerText = originalText;
+        btnConfirm.disabled = false;
+    }
+}
 
 changeLanguage('th');
