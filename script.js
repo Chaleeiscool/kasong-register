@@ -59,7 +59,7 @@ let currentLang = 'th';
 let currentStep = 1;
 const currentYearAD = new Date().getFullYear();
 
-// --- 3. ZIP CODE AUTO-FILL LOGIC ---
+/// --- 3. ZIP CODE AUTO-FILL LOGIC ---
 function handleZipCode() {
     const zipInput = document.getElementById('zipcode');
     zipInput.value = zipInput.value.replace(/\D/g, ''); 
@@ -69,28 +69,31 @@ function handleZipCode() {
     const subSelect = document.getElementById('subdistrict');
     const d = dictionary[currentLang]; 
 
-    const currentSubIndex = subSelect.selectedIndex;
-
     if (zipInput.value.length === 5) {
-        // Accessing the now-dynamic zipDatabase
-        const data = zipDatabase[zipInput.value];
-        if (data) {
-            const langData = data[currentLang]; 
-            provInput.value = langData.province;
-            distInput.value = langData.district;
+        // 1. ค้นหาข้อมูลทั้งหมดที่มี "รหัสไปรษณีย์" ตรงกับที่ผู้ใช้พิมพ์
+        const matchedPlaces = zipDatabase.filter(item => item["รหัสไปรษณีย์"] === zipInput.value);
+
+        if (matchedPlaces.length > 0) {
+            // 2. ดึงจังหวัดและอำเภอมาแสดง (ใช้ข้อมูลจากรายการแรกที่ค้นเจอ)
+            provInput.value = matchedPlaces[0]["จังหวัด"];
+            distInput.value = matchedPlaces[0]["อำเภอ / เขต"];
             
             provInput.className = "locked-autofill";
             distInput.className = "locked-autofill";
             
             subSelect.innerHTML = `<option value="">${d.subSelect}</option>`;
-            langData.subdistricts.forEach((sub, index) => {
-                const isSelected = (currentSubIndex === index + 1) ? "selected" : "";
-                subSelect.innerHTML += `<option value="${sub}" ${isSelected}>${sub}</option>`;
+            
+            // 3. ดึงรายชื่อ "ตำบล" ทั้งหมดที่อยู่ในรหัสไปรษณีย์นี้มาใส่ในตัวเลือก (ใช้ Set เพื่อกันตำบลซ้ำ)
+            const uniqueSubdistricts = [...new Set(matchedPlaces.map(item => item["ตำบล / แขวง"]))];
+            
+            uniqueSubdistricts.forEach(sub => {
+                subSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
             });
             
             subSelect.disabled = false;
             subSelect.className = ""; 
         } else {
+            // กรณีค้นหาแล้วไม่เจอข้อมูลใน JSON
             provInput.value = d.notFound;
             distInput.value = d.notFound;
             provInput.className = "locked-empty";
@@ -100,6 +103,7 @@ function handleZipCode() {
             subSelect.className = "locked-empty";
         }
     } else {
+        // กรณีพิมพ์รหัสยังไม่ครบ 5 หลัก
         provInput.value = "";
         distInput.value = "";
         provInput.className = "locked-empty";
