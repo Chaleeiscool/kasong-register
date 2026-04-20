@@ -322,7 +322,7 @@ async function finalSubmit() {
 
         if (result === "exists") {
             // กรณีเบอร์ซ้ำ!
-            alert("❌ เบอร์โทรศัพท์นี้เคยสมัครสมาชิกไปแล้ว ไม่สามารถสมัครซ้ำได้ครับ");
+            alert("❌ เบอร์โทรศัพท์นี้เคยสมัครสมาชิกไปแล้ว ไม่สามารถสมัครซ้ำได้ครับ หากต้องการแก้ไขข้อมูล ติดต่อทางไลน์ @kasongsuper");
             btnConfirm.innerText = "ตกลง";
             btnConfirm.disabled = false;
             
