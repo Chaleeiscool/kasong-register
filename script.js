@@ -291,7 +291,7 @@ function showConfirmPopup(e) {
 function closeConfirm() { document.getElementById('confirm-popup').classList.add('hidden'); }
 
 async function finalSubmit() {
-    const scriptURL = 'URL_ของคุณ';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwuqi4L4_K5_cMM9T-eaXQ3GU64mHMYPW55gS7hFXOjLpHRHNJuUIjHV7TMO-mnbvDzTQ/exec';
     const btnConfirm = document.getElementById('btn-confirm-text');
     btnConfirm.innerText = "กำลังตรวจสอบข้อมูล...";
     btnConfirm.disabled = true;
