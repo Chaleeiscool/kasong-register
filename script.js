@@ -167,7 +167,7 @@ function populateDays() {
     const mValue = document.getElementById('dob-month').value;
     const yValue = document.getElementById('dob-year').value;
     
-    // ไฮไลท์การแก้ปัญหา: ถ้ายังไม่เลือกเดือน ให้ดึงค่าเป็นเดือน 1 (มกราคม) เพื่อให้มี 31 วันโผล่มาให้เลือกทันที
+    // ถ้ายังไม่เลือกเดือน ให้ default เป็น 1 (มกราคม) เพื่อให้มีเลข 1-31 เด้งขึ้นมาให้เลือกทันที
     const m = parseInt(mValue) || 1; 
     const y = parseInt(yValue) || new Date().getFullYear();
     
@@ -176,14 +176,14 @@ function populateDays() {
     
     daySelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? 'วัน' : 'Day'}</option>`;
     
-    // คำนวณวันสิ้นเดือน (รู้เองว่าเดือนไหนมี 28, 29, 30 หรือ 31 วัน)
+    // คำนวณวันสิ้นเดือน
     const daysInMonth = new Date(y, m, 0).getDate(); 
 
     for (let d = 1; d <= daysInMonth; d++) {
         const opt = document.createElement('option');
         opt.value = d;
         opt.textContent = d;
-        opt.style.color = "#000"; // ให้ตัวเลือกสีดำ
+        opt.style.color = "#000"; 
         if (currentDay == d) opt.selected = true;
         daySelect.appendChild(opt);
     }
@@ -292,46 +292,56 @@ async function handleZipCode() {
     const provInput = document.getElementById('province');
     const distSelect = document.getElementById('district');
     const subSelect = document.getElementById('subDistrict');
-    
-    // สีทองที่เป็นสีหลักของร้าน
-    const goldColor = "#b89551";
-    const defaultBorder = "transparent"; 
+    const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
 
+    // ถ้าพิมพ์ยังไม่ถึง 5 ตัว ให้ล้างค่าทิ้ง
     if (zip.length < 5) {
         provInput.value = "";
-        provInput.style.borderColor = defaultBorder;
-        distSelect.style.borderColor = defaultBorder;
-        subSelect.style.borderColor = defaultBorder;
+        distSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- รอระบุรหัสไปรษณีย์ --' : '-- Waiting --'}</option>`;
+        subSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- รอระบุรหัสไปรษณีย์ --' : '-- Waiting --'}</option>`;
+        [provInput, distSelect, subSelect].forEach(el => el.classList.remove('active-gold'));
+        updateCard();
         return;
     }
 
+    // ถ้าพิมพ์ครบ 5 ตัว ให้ค้นหาในฐานข้อมูล
     filteredAddresses = zipDatabase.filter(item => String(item["รหัสไปรษณีย์"]) === zip);
 
     if (filteredAddresses.length > 0) {
-        // Autofill จังหวัด และใส่ขอบสีทอง
+        // เจอข้อมูล! ดำเนินการ Autofill และใส่ขอบทอง
         provInput.value = filteredAddresses[0]["จังหวัด"];
-        provInput.style.borderColor = goldColor;
-        provInput.style.borderWidth = "2px";
-        provInput.style.borderStyle = "solid";
+        provInput.classList.add('active-gold');
 
         const districts = [...new Set(filteredAddresses.map(item => item["อำเภอ / เขต"]))];
-        distSelect.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
+        distSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- เลือกอำเภอ --' : '-- Select District --'}</option>`;
         districts.forEach(d => {
             const opt = document.createElement('option');
             opt.value = d;
             opt.textContent = d;
+            opt.style.color = "#000";
             distSelect.appendChild(opt);
         });
 
         if (districts.length === 1) {
             distSelect.value = districts[0];
-            distSelect.style.borderColor = goldColor;
-            distSelect.style.borderWidth = "2px";
-            distSelect.style.borderStyle = "solid";
+            distSelect.classList.add('active-gold');
             updateSubDistricts();
+        } else {
+            distSelect.classList.remove('active-gold');
+            subSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- รอเลือกอำเภอ --' : '-- Waiting --'}</option>`;
         }
+    } else {
+        // ไม่เจอข้อมูล! แจ้งผู้ใช้ว่า "ไม่พบข้อมูล"
+        provInput.value = lang === 'th' ? "ไม่พบข้อมูล" : "Not Found";
+        provInput.classList.remove('active-gold');
+        provInput.style.borderColor = "red"; // แจ้งเตือนสีแดง (option)
+        
+        distSelect.innerHTML = `<option value="" style="color:red;">${lang === 'th' ? '-- ไม่พบข้อมูลรหัสนี้ --' : '-- Not Found --'}</option>`;
+        subSelect.innerHTML = `<option value="" style="color:red;">${lang === 'th' ? '-- ไม่พบข้อมูลรหัสนี้ --' : '-- Not Found --'}</option>`;
     }
+    
     updateCard();
+    validateStep2();
 }
 
 function updateSubDistricts() {
