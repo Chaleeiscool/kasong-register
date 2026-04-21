@@ -29,7 +29,7 @@ const dictionary = {
         title: "สมัครสมาชิก", subtitle: "กะซ้งซุปเปอร์และเคมาร์ท", brand: "KS SUPER & K-MART บัตรสมาชิก",
         step1: "ขั้นตอน 1 / 2", step2: "ขั้นตอน 2 / 2",
         labelName: "ชื่อ - นามสกุล", labelGen: "เพศ", labelDob: "วันเกิด", labelPhone: "เบอร์โทรศัพท์",
-        labelZip: "รหัสไปรษณีย์", labelProv: "จังหวัด", labelDist: "อำเภอ / เขต", labelSub: "ตำบล / แขวง",
+        myaddress: "ที่อยู่ (บ้านเลขที่, ซอย, ถนน)", labelZip: "รหัสไปรษณีย์", labelProv: "จังหวัด", labelDist: "อำเภอ / เขต", labelSub: "ตำบล / แขวง",
         optMale: "ชาย", optFemale: "หญิง", optOther: "ไม่ระบุ",
         consent: "ฉันยินยอมให้เก็บรักษาข้อมูลเพื่อการสมัครสมาชิก",
         btnNext: "ถัดไป", btnSubmit: "ลงทะเบียนสมาชิก", btnBack: "ย้อนกลับ",
@@ -40,7 +40,7 @@ const dictionary = {
         title: "Register", subtitle: "Kasong Super & K-Mart", brand: "KS SUPER & K-MART Member Card",
         step1: "Step 1 / 2", step2: "Step 2 / 2",
         labelName: "Full Name", labelGen: "Gender", labelDob: "Date of Birth", labelPhone: "Phone Number",
-        labelZip: "Postal Code", labelProv: "Province", labelDist: "District", labelSub: "Sub-district",
+        myaddress: "Address (House Number, Soi, Road)", labelZip: "Postal Code", labelProv: "Province", labelDist: "District", labelSub: "Sub-district",
         optMale: "Male", optFemale: "Female", optOther: "Other",
         consent: "I agree to provide my information for membership registration",
         btnNext: "Next", btnSubmit: "Register Membership", btnBack: "Back",
@@ -109,6 +109,9 @@ function changeLanguage(lang) {
 /* =================================================================
    3. ระบบจัดการวันเกิด (DOB DROPDOWN LOGIC)
 ================================================================= */
+/* =================================================================
+   ระบบจัดการวันเกิด (DOB DROPDOWN LOGIC) - ฉบับใหม่ล่าสุด
+================================================================= */
 const monthsTH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 const monthsEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -117,27 +120,32 @@ function initDobDropdowns() {
     if (!yearSelect) return;
 
     const curYearAD = new Date().getFullYear();
-    const defYearAD = curYearAD - 18; // ค่าเริ่มต้น ย้อนหลัง 18 ปี
+    const defYearAD = curYearAD - 18; // Default ย้อนหลัง 18 ปี
 
+    // 1. สร้างตัวเลือกปี
     yearSelect.innerHTML = '<option value="" style="color:#777;">ปี (พ.ศ.)</option>';
     for (let i = curYearAD; i >= curYearAD - 100; i--) {
         const opt = document.createElement('option');
         opt.value = i;
-        opt.textContent = i + 543; // แสดงเป็น พ.ศ. เสมอ
-        opt.style.color = "#000"; // ให้ตัวเลือกที่กดได้เป็นสีดำ
+        opt.textContent = i + 543; // แสดงเป็น พ.ศ.
+        opt.style.color = "#000"; // ให้ตัวเลือกสีดำ
         if (i === defYearAD) opt.selected = true;
         yearSelect.appendChild(opt);
     }
     
+    // 2. โหลดเดือน
     updateMonthOptions();
-    populateDays();
+    
+    // 3. โหลดวัน ทันที! (ไม่ต้องรอให้กดเลือกเดือนก่อน)
+    populateDays(); 
 }
 
 function updateMonthOptions() {
     const monthSelect = document.getElementById('dob-month');
     if (!monthSelect) return;
     
-    const lang = currentLang;
+    // ตรวจสอบภาษาปัจจุบัน
+    const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
     const months = lang === 'th' ? monthsTH : monthsEN;
     const currentVal = monthSelect.value;
     
@@ -146,7 +154,7 @@ function updateMonthOptions() {
         const opt = document.createElement('option');
         opt.value = i + 1;
         opt.textContent = m;
-        opt.style.color = "#000"; // สีดำ
+        opt.style.color = "#000";
         if (currentVal == i + 1) opt.selected = true;
         monthSelect.appendChild(opt);
     });
@@ -156,29 +164,39 @@ function populateDays() {
     const daySelect = document.getElementById('dob-day');
     if (!daySelect) return;
 
-    const m = parseInt(document.getElementById('dob-month').value);
-    const y = parseInt(document.getElementById('dob-year').value);
+    const mValue = document.getElementById('dob-month').value;
+    const yValue = document.getElementById('dob-year').value;
+    
+    // ไฮไลท์การแก้ปัญหา: ถ้ายังไม่เลือกเดือน ให้ดึงค่าเป็นเดือน 1 (มกราคม) เพื่อให้มี 31 วันโผล่มาให้เลือกทันที
+    const m = parseInt(mValue) || 1; 
+    const y = parseInt(yValue) || new Date().getFullYear();
+    
     const currentDay = daySelect.value;
-    const lang = currentLang;
+    const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
     
     daySelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? 'วัน' : 'Day'}</option>`;
     
-    if (!m || !y) return;
+    // คำนวณวันสิ้นเดือน (รู้เองว่าเดือนไหนมี 28, 29, 30 หรือ 31 วัน)
+    const daysInMonth = new Date(y, m, 0).getDate(); 
 
-    const daysInMonth = new Date(y, m, 0).getDate(); // คำนวณวันสิ้นเดือน
     for (let d = 1; d <= daysInMonth; d++) {
         const opt = document.createElement('option');
         opt.value = d;
         opt.textContent = d;
-        opt.style.color = "#000"; // สีดำ
+        opt.style.color = "#000"; // ให้ตัวเลือกสีดำ
         if (currentDay == d) opt.selected = true;
         daySelect.appendChild(opt);
     }
 }
 
+// สั่งให้ทำงานเมื่อโหลดหน้าเว็บเสร็จ
+window.addEventListener('DOMContentLoaded', initDobDropdowns);
+
 // สั่งให้ระบบวันเกิดทำงานเมื่อโหลดเว็บเสร็จ
 window.addEventListener('DOMContentLoaded', initDobDropdowns);
 
+updateMonthOptions();
+populateDays();
 
 /* =================================================================
    4. ระบบตรวจสอบข้อมูล (VALIDATION & CARD PREVIEW)

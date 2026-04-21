@@ -107,9 +107,10 @@ select:not(:disabled) { background: white !important; cursor: pointer; border-co
     width: 100%;
     padding: 15px 20px;
     border: 2px solid transparent;
-    background: var(--gray-bg);
+    background: #FFF9E6;
     border-radius: 16px;
     font-size: 16px;
+    color: #888; /* สีเทาอ่อนสำหรับ placeholder */
     outline: none;
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -126,8 +127,13 @@ select:not(:disabled) { background: white !important; cursor: pointer; border-co
 .modern-select option:first-child {
     color: #777;
 }
-
-/* ตัวเลือกอื่นๆ ให้เป็นสีดำ */
-.modern-select option {
-    color: #000;
+/* คลาสสำหรับ Autofill ขอบสีทอง */
+.active-gold {
+    border-color: #b89551 !important;
+    box-shadow: 0 0 5px rgba(184, 149, 81, 0.3);
 }
+
+.readonly-input {
+    background: #f9f9f9;
+    border: 2px solid #ddd;
+    }
