@@ -268,63 +268,60 @@ function goToStep1() {
 /* =================================================================
    5. SMART ZIPCODE LOGIC (ระบบรหัสไปรษณีย์ 1 ต่อหลายอำเภอ)
 ================================================================= */
-let filteredAddresses = [];
-
+/* --- แก้ไขระบบรหัสไปรษณีย์ และ Autofill ขอบสีทอง --- */
 async function handleZipCode() {
     const zip = document.getElementById('zipCode').value;
     const provInput = document.getElementById('province');
     const distSelect = document.getElementById('district');
     const subSelect = document.getElementById('subDistrict');
-    const lang = currentLang;
+    
+    // สีทองที่เป็นสีหลักของร้าน
+    const goldColor = "#b89551";
+    const defaultBorder = "transparent"; 
 
     if (zip.length < 5) {
         provInput.value = "";
-        distSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- เลือกรหัสไปรษณีย์ --' : '-- Select Zip --'}</option>`;
-        subSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- เลือกรหัสไปรษณีย์ --' : '-- Select Zip --'}</option>`;
-        updateCard();
-        validateStep2();
+        provInput.style.borderColor = defaultBorder;
+        distSelect.style.borderColor = defaultBorder;
+        subSelect.style.borderColor = defaultBorder;
         return;
     }
 
     filteredAddresses = zipDatabase.filter(item => String(item["รหัสไปรษณีย์"]) === zip);
 
     if (filteredAddresses.length > 0) {
+        // Autofill จังหวัด และใส่ขอบสีทอง
         provInput.value = filteredAddresses[0]["จังหวัด"];
-        
-        // กรองหาอำเภอที่ไม่ซ้ำกัน
+        provInput.style.borderColor = goldColor;
+        provInput.style.borderWidth = "2px";
+        provInput.style.borderStyle = "solid";
+
         const districts = [...new Set(filteredAddresses.map(item => item["อำเภอ / เขต"]))];
-        distSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- เลือกอำเภอ / เขต --' : '-- Select District --'}</option>`;
-        
+        distSelect.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
         districts.forEach(d => {
             const opt = document.createElement('option');
             opt.value = d;
             opt.textContent = d;
-            opt.style.color = "#000"; // ให้ตัวเลือกสีดำ
             distSelect.appendChild(opt);
         });
 
-        // ถ้ามีอำเภอเดียว เลือกให้เลยอัตโนมัติ
         if (districts.length === 1) {
             distSelect.value = districts[0];
+            distSelect.style.borderColor = goldColor;
+            distSelect.style.borderWidth = "2px";
+            distSelect.style.borderStyle = "solid";
             updateSubDistricts();
-        } else {
-            subSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- รอเลือกอำเภอ --' : '-- Waiting --'}</option>`;
         }
-    } else {
-        provInput.value = lang === 'th' ? "ไม่พบข้อมูล" : "Not found";
     }
-    
     updateCard();
-    validateStep2();
 }
 
 function updateSubDistricts() {
     const distVal = document.getElementById('district').value;
     const subSelect = document.getElementById('subDistrict');
-    const lang = currentLang;
-    
-    subSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- เลือกตำบล / แขวง --' : '-- Select Sub-district --'}</option>`;
+    const goldColor = "#b89551";
 
+    subSelect.innerHTML = '<option value="">-- เลือกตำบล --</option>';
     const subs = filteredAddresses
         .filter(item => item["อำเภอ / เขต"] === distVal)
         .map(item => item["ตำบล / แขวง"]);
@@ -333,18 +330,41 @@ function updateSubDistricts() {
         const opt = document.createElement('option');
         opt.value = s;
         opt.textContent = s;
-        opt.style.color = "#000"; // ให้ตัวเลือกสีดำ
         subSelect.appendChild(opt);
     });
 
     if (subs.length === 1) {
         subSelect.value = subs[0];
+        subSelect.style.borderColor = goldColor;
+        subSelect.style.borderWidth = "2px";
+        subSelect.style.borderStyle = "solid";
     }
-    
     updateCard();
-    validateStep2();
 }
 
+/* --- แก้ไขการรวบรวมข้อมูลเพื่อส่ง (Final Submit) --- */
+async function finalSubmit() {
+    const SCRIPT_URL = 'ใส่_URL_ของคุณที่นี่'; 
+    
+    const addressDetail = document.getElementById('addressDetail').value.trim();
+    const sub = document.getElementById('subDistrict').value;
+    const dist = document.getElementById('district').value;
+    const prov = document.getElementById('province').value;
+    const zip = document.getElementById('zipCode').value;
+
+    // รวมที่อยู่แบบเต็ม
+    const fullAddress = `${addressDetail} ต.${sub} อ.${dist} จ.${prov} ${zip}`;
+
+    const formData = {
+        fullName: document.getElementById('fullName').value.trim(),
+        gender: document.querySelector('input[name="gender"]:checked')?.value || "ไม่ระบุ",
+        dob: `${document.getElementById('dob-day').value}/${document.getElementById('dob-month').value}/${parseInt(document.getElementById('dob-year').value) + 543}`,
+        phone: document.getElementById('phone').value.replace(/\D/g, ''),
+        address: fullAddress
+    };
+    
+    // (โค้ด Fetch อื่นๆ คงเดิมตามไฟล์ปัจจุบันของคุณ)
+}
 
 /* =================================================================
    6. SUBMIT & API (หน้าต่างยืนยันและส่งเข้า Google Sheets)
