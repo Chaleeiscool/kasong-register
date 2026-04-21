@@ -101,3 +101,4 @@ select:not(:disabled) { background: white !important; cursor: pointer; border-co
 .hidden, #confirm-popup.hidden, #success-screen.hidden, #step-1.hidden, #step-2.hidden { 
     display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -9999 !important;
 }
+
