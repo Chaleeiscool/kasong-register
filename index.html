@@ -48,7 +48,7 @@
                    <div id="step-1">
     <div class="field">
         <label id="label-name-text">ชื่อ - นามสกุล</label>
-        <input type="text" id="fullName" placeholder="เช่น: สมหมาย คำดี" oninput="updateCard(); validateStep1()" required>
+        <input type="text" id="fullName" placeholder="เช่น สมหมาย คำดี" oninput="updateCard(); validateStep1()" required>
     </div>
 
     <div class="field">
@@ -77,7 +77,7 @@
 
     <div class="field">
         <label id="label-phone-text">เบอร์โทรศัพท์</label>
-        <input type="tel" id="phone" placeholder="080-0000000" maxlength="10" oninput="this.value = this.value.replace(/\D/g, ''); updateCard(); validateStep1()" required>
+        <input type="tel" id="phone" placeholder="เช่น 080-0000000" maxlength="10" oninput="this.value = this.value.replace(/\D/g, ''); updateCard(); validateStep1()" required>
     </div>
 
     <button type="button" class="btn-submit" id="btn-next-step" onclick="goToStep2()" disabled>ถัดไป</button>
