@@ -101,3 +101,35 @@ select:not(:disabled) { background: white !important; cursor: pointer; border-co
 .hidden, #confirm-popup.hidden, #success-screen.hidden, #step-1.hidden, #step-2.hidden { 
     display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -9999 !important;
 }
+
+/* --- ส่วนที่เพิ่มใหม่เพื่อให้ Select สวยงามและเข้ากับดีไซน์เดิม --- */
+.modern-select {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid transparent;
+    background: var(--gray-bg);
+    border-radius: 16px;
+    font-size: 16px;
+    outline: none;
+    appearance: none; /* ลบลูกศรเดิมของบราวเซอร์ออก */
+    
+    /* ใส่รูปลูกศรแบบ Minimal เข้าไปใหม่ */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23001D3D' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 15px;
+    cursor: pointer;
+    color: var(--navy);
+    transition: 0.3s;
+}
+
+.modern-select:focus {
+    border-color: var(--navy);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(0, 29, 61, 0.05);
+}
+
+/* ปรับแต่งตัวเลือกข้างใน */
+.modern-select option {
+    padding: 10px;
+}
