@@ -7,7 +7,7 @@ async function loadZipDatabase() {
     try {
         const response = await fetch('./thailand-zipcodes.json'); // ให้ตรงกับชื่อไฟล์ JSON ของคุณ
         if (!response.ok) throw new Error("JSON file not found");
-        
+
         zipDatabase = await response.json();
         console.log("Thailand Address Database Loaded Successfully");
     } catch (error) {
@@ -26,7 +26,7 @@ let currentLang = 'th';
 
 const dictionary = {
     th: {
-        title: "สมัครสมาชิก", subtitle: "กะซ้งซุปเปอร์และเคมาร์ท", brand: "KS SUPER & K-MART บัตรสมาชิก",
+        title: "สมัครสมาชิก", subtitle: "กะซ้งซุปเปอร์ | เคมาร์ท | กะซ้งเพ็ทชอป", brand: "กะซ้งซุปเปอร์ | เคมาร์ท | กะซ้งเพ็ทชอป บัตรสมาชิก",
         step1: "ขั้นตอน 1 / 2", step2: "ขั้นตอน 2 / 2",
         labelName: "ชื่อ", labelGen: "เพศ", labelDob: "วันเกิด", labelPhone: "เบอร์โทร", labelAddr: "ที่อยู่",
         myaddress: "ที่อยู่ (บ้านเลขที่, ซอย, ถนน)", labelZip: "รหัสไปรษณีย์", labelProv: "จังหวัด", labelDist: "อำเภอ / เขต", labelSub: "ตำบล / แขวง",
@@ -38,7 +38,7 @@ const dictionary = {
         addrPlaceholder: "ที่อยู่, ตำบล, อำเภอ, จังหวัด, รหัสไปรษณีย์"
     },
     en: {
-        title: "Register", subtitle: "Kasong Super & K-Mart", brand: "KS SUPER & K-MART Member Card",
+        title: "Membership Registration", subtitle: "Kasong Super | K-Mart | Kasong Petshop", brand: "Kasong Super | K-Mart | Kasong Petshop Membership Card",
         step1: "Step 1 / 2", step2: "Step 2 / 2",
         labelName: "Name", labelGen: "Gender", labelDob: "Birthday", labelPhone: "Phone", labelAddr: "Address",
         myaddress: "Address (House Number, Soi, Road)", labelZip: "Postal Code", labelProv: "Province", labelDist: "District", labelSub: "Sub-district",
@@ -53,12 +53,12 @@ const dictionary = {
 
 function updateUIText() {
     const d = dictionary[currentLang];
-    
+
     // Header & Badge
     if (document.getElementById('header-title')) document.getElementById('header-title').innerText = d.title;
     if (document.getElementById('header-subtitle')) document.getElementById('header-subtitle').innerText = d.subtitle;
     if (document.getElementById('card-brand-text')) document.getElementById('card-brand-text').innerText = d.brand;
-    
+
     // Step Badge
     const stepBadge = document.getElementById('step-badge-text');
     if (stepBadge) {
@@ -66,7 +66,7 @@ function updateUIText() {
         const isStep2 = document.getElementById('step-1')?.classList.contains('hidden');
         stepBadge.innerText = isStep2 ? d.step2 : d.step1;
     }
-    
+
     // Labels
     if (document.getElementById('label-name-text')) document.getElementById('label-name-text').innerText = d.labelName;
     if (document.getElementById('label-gender-text')) document.getElementById('label-gender-text').innerText = d.labelGen;
@@ -77,19 +77,19 @@ function updateUIText() {
     if (document.getElementById('label-prov')) document.getElementById('label-prov').innerText = d.labelProv;
     if (document.getElementById('label-dist')) document.getElementById('label-dist').innerText = d.labelDist;
     if (document.getElementById('label-sub')) document.getElementById('label-sub').innerText = d.labelSub;
-    
+
     // Options
     if (document.getElementById('opt-male-text')) document.getElementById('opt-male-text').innerText = d.optMale;
     if (document.getElementById('opt-female-text')) document.getElementById('opt-female-text').innerText = d.optFemale;
     if (document.getElementById('opt-other-text')) document.getElementById('opt-other-text').innerText = d.optOther;
     if (document.getElementById('consent-text')) document.getElementById('consent-text').innerText = d.consent;
-    
+
     // Buttons
     if (document.getElementById('btn-next-step')) document.getElementById('btn-next-step').innerText = d.btnNext;
     if (document.getElementById('btn-submit-real')) document.getElementById('btn-submit-real').innerText = d.btnSubmit;
     const backBtns = document.querySelectorAll('.btn-back');
     backBtns.forEach(btn => btn.innerText = d.btnBack);
-    
+
     // Overlays
     if (document.getElementById('confirm-title-text')) document.getElementById('confirm-title-text').innerText = d.confirmTitle;
     if (document.getElementById('label-res-name')) document.getElementById('label-res-name').innerText = d.labelName + ":";
@@ -106,7 +106,7 @@ function updateUIText() {
     // Placeholders
     if (document.getElementById('fullName')) document.getElementById('fullName').placeholder = currentLang === 'th' ? "กรอกชื่อ และ นามสกุล" : "Enter full name";
     if (document.getElementById('province')) document.getElementById('province').placeholder = currentLang === 'th' ? "จะแสดงอัตโนมัติ" : "Auto-filled";
-    
+
     updateCard();
 }
 
@@ -115,7 +115,7 @@ function changeLanguage(lang) {
     document.getElementById('btn-th').classList.remove('active');
     document.getElementById('btn-en').classList.remove('active');
     document.getElementById(`btn-${lang}`).classList.add('active');
-    
+
     // Toggle the slider position
     if (lang === 'en') {
         switcher.classList.add('en-active');
@@ -124,7 +124,7 @@ function changeLanguage(lang) {
     }
 
     currentLang = lang;
-    
+
     updateUIText();
     updateMonthOptions();
     populateDays();
@@ -157,23 +157,23 @@ function initDobDropdowns() {
         if (i === defYearAD) opt.selected = true;
         yearSelect.appendChild(opt);
     }
-    
+
     // 2. โหลดเดือน
     updateMonthOptions();
-    
+
     // 3. โหลดวัน ทันที! (ไม่ต้องรอให้กดเลือกเดือนก่อน)
-    populateDays(); 
+    populateDays();
 }
 
 function updateMonthOptions() {
     const monthSelect = document.getElementById('dob-month');
     if (!monthSelect) return;
-    
+
     // ตรวจสอบภาษาปัจจุบัน
     const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
     const months = lang === 'th' ? monthsTH : monthsEN;
     const currentVal = monthSelect.value;
-    
+
     monthSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? 'เดือน' : 'Month'}</option>`;
     months.forEach((m, i) => {
         const opt = document.createElement('option');
@@ -191,24 +191,24 @@ function populateDays() {
 
     const mValue = document.getElementById('dob-month').value;
     const yValue = document.getElementById('dob-year').value;
-    
+
     // ถ้ายังไม่เลือกเดือน ให้ default เป็น 1 (มกราคม) เพื่อให้มีเลข 1-31 เด้งขึ้นมาให้เลือกทันที
-    const m = parseInt(mValue) || 1; 
+    const m = parseInt(mValue) || 1;
     const y = parseInt(yValue) || new Date().getFullYear();
-    
+
     const currentDay = daySelect.value;
     const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
-    
+
     daySelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? 'วัน' : 'Day'}</option>`;
-    
+
     // คำนวณวันสิ้นเดือน
-    const daysInMonth = new Date(y, m, 0).getDate(); 
+    const daysInMonth = new Date(y, m, 0).getDate();
 
     for (let d = 1; d <= daysInMonth; d++) {
         const opt = document.createElement('option');
         opt.value = d;
         opt.textContent = d;
-        opt.style.color = "#000"; 
+        opt.style.color = "#000";
         if (currentDay == d) opt.selected = true;
         daySelect.appendChild(opt);
     }
@@ -238,7 +238,7 @@ function updateCard() {
     if (document.getElementById('display-name')) {
         document.getElementById('display-name').innerText = name || dictionary[currentLang].labelName;
     }
-    
+
     if (document.getElementById('display-phone')) {
         let formattedPhone = phone || "";
         if (formattedPhone.length === 10) {
@@ -254,7 +254,7 @@ function updateCard() {
         if (dist) addressParts.push(`อ.${dist}`);
         if (prov) addressParts.push(`จ.${prov}`);
         if (zip) addressParts.push(zip);
-        
+
         document.getElementById('display-address-short').innerText = addressParts.length > 0 ? addressParts.join(' ') : dictionary[currentLang].addrPlaceholder;
     }
 }
@@ -266,7 +266,7 @@ function validateStep1() {
     const d = document.getElementById('dob-day')?.value;
     const m = document.getElementById('dob-month')?.value;
     const y = document.getElementById('dob-year')?.value;
-    
+
     const btnNext = document.getElementById('btn-next-step');
     if (!btnNext) return;
 
@@ -282,7 +282,7 @@ function validateStep2() {
     const dist = document.getElementById('district')?.value;
     const sub = document.getElementById('subDistrict')?.value;
     const consent = document.getElementById('consent')?.checked;
-    
+
     const btnSubmit = document.getElementById('btn-submit-real');
     if (!btnSubmit) return;
 
@@ -363,11 +363,11 @@ async function handleZipCode() {
         provInput.value = lang === 'th' ? "ไม่พบข้อมูล" : "Not Found";
         provInput.classList.remove('active-gold');
         provInput.style.borderColor = "red"; // แจ้งเตือนสีแดง (option)
-        
+
         distSelect.innerHTML = `<option value="" style="color:red;">${lang === 'th' ? '-- ไม่พบข้อมูลรหัสนี้ --' : '-- Not Found --'}</option>`;
         subSelect.innerHTML = `<option value="" style="color:red;">${lang === 'th' ? '-- ไม่พบข้อมูลรหัสนี้ --' : '-- Not Found --'}</option>`;
     }
-    
+
     updateCard();
     validateStep2();
 }
@@ -401,8 +401,8 @@ function updateSubDistricts() {
 
 /* --- แก้ไขการรวบรวมข้อมูลเพื่อส่ง (Final Submit) --- */
 async function finalSubmit() {
-    const SCRIPT_URL = 'ใส่_URL_ของคุณที่นี่'; 
-    
+    const SCRIPT_URL = 'ใส่_URL_ของคุณที่นี่';
+
     const addressDetail = document.getElementById('addressDetail').value.trim();
     const sub = document.getElementById('subDistrict').value;
     const dist = document.getElementById('district').value;
@@ -419,7 +419,7 @@ async function finalSubmit() {
         phone: document.getElementById('phone').value.replace(/\D/g, ''),
         address: fullAddress
     };
-    
+
     // (โค้ด Fetch อื่นๆ คงเดิมตามไฟล์ปัจจุบันของคุณ)
 }
 
@@ -428,7 +428,7 @@ async function finalSubmit() {
 ================================================================= */
 function showConfirm() {
     const lang = currentLang;
-    
+
     // ชื่อ และ เบอร์โทร
     document.getElementById('res-name').innerText = document.getElementById('fullName').value;
     const phone = document.getElementById('phone').value;
@@ -441,7 +441,7 @@ function showConfirm() {
     else if (genderVal === "Female") genderText = dictionary[lang].optFemale;
     else if (genderVal === "Other") genderText = dictionary[lang].optOther;
     document.getElementById('res-gender').innerText = genderText;
-    
+
     // วันเกิด
     const d = document.getElementById('dob-day').value;
     const m = document.getElementById('dob-month').value;
@@ -449,7 +449,7 @@ function showConfirm() {
     const months = lang === 'th' ? monthsTH : monthsEN;
     const monthName = months[parseInt(m) - 1];
     document.getElementById('res-dob').innerText = `${d} ${monthName} ${parseInt(y) + 543}`;
-    
+
     // ที่อยู่
     const addrDetail = document.getElementById('addressDetail').value.trim();
     const prov = document.getElementById('province').value;
@@ -459,10 +459,10 @@ function showConfirm() {
     const prefixSub = lang === 'th' ? 'ต.' : 'Sub-dist: ';
     const prefixDist = lang === 'th' ? 'อ.' : 'Dist: ';
     const prefixProv = lang === 'th' ? 'จ.' : 'Prov: ';
-    
+
     const fullAddr = addrDetail ? `${addrDetail} ${prefixSub}${sub} ${prefixDist}${dist} ${prefixProv}${prov} ${zip}` : `${prefixSub}${sub} ${prefixDist}${dist} ${prefixProv}${prov} ${zip}`;
     document.getElementById('res-address').innerText = fullAddr;
-    
+
     document.getElementById('confirm-popup').classList.remove('hidden');
 }
 
@@ -472,7 +472,7 @@ function closeConfirm() {
 
 async function finalSubmit() {
     // ⚠️ อย่าลืมใส่ URL ของ Apps Script ล่าสุดของคุณที่ตรงนี้!
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2Yk9LjY93_K8HF3td6hNhuuUrsz_8Z8Xs4XP-e3JXsj08nlmYkb4NrWBuVzkzJj7tOQ/exec'; 
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2Yk9LjY93_K8HF3td6hNhuuUrsz_8Z8Xs4XP-e3JXsj08nlmYkb4NrWBuVzkzJj7tOQ/exec';
 
     const btnConfirm = document.getElementById('btn-confirm-text');
     btnConfirm.innerText = currentLang === 'th' ? "กำลังตรวจสอบข้อมูล..." : "Processing...";
@@ -510,8 +510,8 @@ async function finalSubmit() {
         const result = await response.text();
 
         if (result === "exists") {
-            alert(currentLang === 'th' 
-                ? "❌ เบอร์โทรศัพท์นี้เคยสมัครสมาชิกไปแล้ว ไม่สามารถสมัครซ้ำได้ครับ" 
+            alert(currentLang === 'th'
+                ? "❌ เบอร์โทรศัพท์นี้เคยสมัครสมาชิกไปแล้ว ไม่สามารถสมัครซ้ำได้ครับ"
                 : "❌ This phone number is already registered.");
         } else if (result === "success") {
             closeConfirm();

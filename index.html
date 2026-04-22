@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KS SUPER & K-MART</title>
+    <title>Kasong Super | K-Mart | Kasong Petshop</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -15,25 +15,28 @@
         <div class="top-nav">
             <div class="header-text">
                 <h1 id="header-title">สมัครสมาชิก</h1>
-                <p id="header-subtitle">กะซ้งซุปเปอร์และเคมาร์ท</p>
+                <p id="header-subtitle">กะซ้งซุปเปอร์ | เคมาร์ท | กะซ้งเพ็ทชอป</p>
             </div>
-            <div class="modern-lang-switcher">
-                <span class="lang-slider"></span>
-                <button onclick="changeLanguage('th')" id="btn-th" class="active">TH</button>
-                <button onclick="changeLanguage('en')" id="btn-en">EN</button>
+            <div class="top-nav-right">
+                <div class="modern-lang-switcher">
+                    <span class="lang-slider"></span>
+                    <button onclick="changeLanguage('th')" id="btn-th" class="active">TH</button>
+                    <button onclick="changeLanguage('en')" id="btn-en">EN</button>
+                </div>
+                <div class="step-badge" id="step-badge-text">ขั้นตอน 1 / 2</div>
             </div>
         </div>
 
         <div id="registration-screen">
-            <div class="progress-container">
-                <div class="step-badge" id="step-badge-text">ขั้นตอน 1 / 2</div>
-            </div>
+            <!-- Progress badge moved to top-nav for cleaner look -->
+
 
             <div class="card-area">
                 <div class="member-card" id="membershipCard">
                     <div class="card-pattern"></div>
                     <div class="card-info">
-                        <div class="card-label" id="card-brand-text">KS SUPER & K-MART บัตรสมาชิก</div>
+                        <div class="card-label" id="card-brand-text">กะซ้งซุปเปอร์ | เคมาร์ท | กะซ้งเพ็ทชอป บัตรสมาชิก
+                        </div>
                         <h2 id="display-name">ชื่อ-นามสกุล</h2>
                         <p id="display-address-short">ที่อยู่, ตำบล, อำเภอ, จังหวัด, รหัสไปรษณีย์</p>
                     </div>
