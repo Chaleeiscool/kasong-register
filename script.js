@@ -1,12 +1,11 @@
-// --- 1. ZIP CODE DATABASE INITIALIZATION ---
-// We start with an empty object and fill it from the external JSON file
+/* =================================================================
+   1. ZIP CODE DATABASE INITIALIZATION (โหลดข้อมูลที่อยู่)
+================================================================= */
 let zipDatabase = [];
 
-// Background loader: Fetches the full database without freezing the UI
 async function loadZipDatabase() {
     try {
-        // This looks for your 'thailand-zipcodes.json' in your VS Code folder or GitHub repo
-        const response = await fetch('./thailand-zipcodes.json');
+        const response = await fetch('./thailand-zipcodes.json'); // ให้ตรงกับชื่อไฟล์ JSON ของคุณ
         if (!response.ok) throw new Error("JSON file not found");
         
         zipDatabase = await response.json();
@@ -16,337 +15,517 @@ async function loadZipDatabase() {
     }
 }
 
-// Start loading immediately so it's ready by the time the user reaches Step 2
+// โหลดฐานข้อมูลทันทีที่เปิดเว็บ
 loadZipDatabase();
 
-// --- 2. DATA DICTIONARY ---
+
+/* =================================================================
+   2. DATA DICTIONARY (ระบบภาษา)
+================================================================= */
+let currentLang = 'th';
+
 const dictionary = {
-  th: {
-    title: "สมัครสมาชิก", subtitle: "กะซ้งซุปเปอร์และเคมาร์ท", brand: "KS SUPER & K-MART บัตรสมาชิก",
-    step1: "ขั้นตอน 1 / 2", step2: "ขั้นตอน 2 / 2",
-    labelName: "ชื่อ - นามสกุล", labelGen: "เพศ", labelDob: "วันเกิด", labelPhone: "เบอร์โทรศัพท์",
-    labelZip: "รหัสไปรษณีย์", labelProv: "จังหวัด", labelDist: "อำเภอ / เขต", labelSub: "ตำบล / แขวง", labelAddr: "รายละเอียดที่อยู่ (บ้านเลขที่, ถนน)",
-    optMale: "ชาย", optFemale: "หญิง", optOther: "ไม่ระบุ",
-    dobDay: "วัน", dobMonth: "เดือน", dobYear: "ปี",
-    months: ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"],
-    consent: "ฉันยินยอมให้เก็บรักษาข้อมูลเพื่อการสมัครสมาชิก",
-    btnNext: "ถัดไป", btnBack: "ย้อนกลับ", btnSub: "ยืนยันการสมัคร",
-    confirmTitle: "ตรวจสอบข้อมูลของคุณ", btnEdit: "แก้ไขข้อมูล", btnOk: "ถูกต้อง ดำเนินการต่อ", btnFin: "ตกลง",
-    successTitle: "สมัครสมาชิกเรียบร้อย!", successDesc: "ยินดีต้อนรับสู่ครอบครัวกะซ้ง",
-    successNote: "สามารถเริ่มสะสมแต้มได้ในวันถัดไป",
-    phName: "กรอกชื่อ และ นามสกุล", phZip: "เช่น 95110", phAddr: "เช่น 123/4 ม.5 ถ.สุขสวัสดิ์",
-    subReq: "กรุณากรอกรหัสไปรษณีย์ก่อน", subSelect: "-- กรุณาเลือกตำบล --", notFound: "ไม่พบข้อมูล"
-  },
-  en: {
-    title: "Registration", subtitle: "Kasong Super & K-Mart", brand: "KS SUPER & K-MART MEMBERSHIP",
-    step1: "Step 1 / 2", step2: "Step 2 / 2",
-    labelName: "Full Name", labelGen: "Gender", labelDob: "Date of Birth", labelPhone: "Phone Number",
-    labelZip: "Zip Code", labelProv: "Province", labelDist: "District", labelSub: "Sub-district", labelAddr: "Address (House No., Street)",
-    optMale: "Male", optFemale: "Female", optOther: "N/A",
-    dobDay: "Day", dobMonth: "Month", dobYear: "Year",
-    months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-    consent: "I consent to store my data for registration.",
-    btnNext: "Next", btnBack: "Back", btnSub: "Register Now",
-    confirmTitle: "Verify Information", btnEdit: "Edit", btnOk: "Confirm", btnFin: "OK",
-    successTitle: "Registration Success!", successDesc: "Welcome to Kasong family",
-    successNote: "You can start earning points the next day.",
-    phName: "Enter your full name", phZip: "e.g. 95110", phAddr: "e.g. 123/4 M.5 Suksawat Rd.",
-    subReq: "Please enter Zip Code first", subSelect: "-- Select Sub-district --", notFound: "Not Found"
-  }
+    th: {
+        title: "สมัครสมาชิก", subtitle: "กะซ้งซุปเปอร์และเคมาร์ท", brand: "KS SUPER & K-MART บัตรสมาชิก",
+        step1: "ขั้นตอน 1 / 2", step2: "ขั้นตอน 2 / 2",
+        labelName: "ชื่อ", labelGen: "เพศ", labelDob: "วันเกิด", labelPhone: "เบอร์โทร", labelAddr: "ที่อยู่",
+        myaddress: "ที่อยู่ (บ้านเลขที่, ซอย, ถนน)", labelZip: "รหัสไปรษณีย์", labelProv: "จังหวัด", labelDist: "อำเภอ / เขต", labelSub: "ตำบล / แขวง",
+        optMale: "ชาย", optFemale: "หญิง", optOther: "ไม่ระบุ",
+        consent: "ฉันยินยอมให้เก็บรักษาข้อมูลเพื่อการสมัครสมาชิก",
+        btnNext: "ถัดไป", btnSubmit: "ลงทะเบียนสมาชิก", btnBack: "ย้อนกลับ",
+        confirmTitle: "ตรวจสอบข้อมูลของคุณ", btnConfirm: "ถูกต้อง ดำเนินการต่อ", btnEdit: "แก้ไขข้อมูล",
+        successTitle: "สมัครสมาชิกเรียบร้อย!", successDesc: "ยินดีต้อนรับสู่ครอบครัวกะซ้ง", btnOk: "ตกลง",
+        addrPlaceholder: "ที่อยู่, ตำบล, อำเภอ, จังหวัด, รหัสไปรษณีย์"
+    },
+    en: {
+        title: "Register", subtitle: "Kasong Super & K-Mart", brand: "KS SUPER & K-MART Member Card",
+        step1: "Step 1 / 2", step2: "Step 2 / 2",
+        labelName: "Name", labelGen: "Gender", labelDob: "Birthday", labelPhone: "Phone", labelAddr: "Address",
+        myaddress: "Address (House Number, Soi, Road)", labelZip: "Postal Code", labelProv: "Province", labelDist: "District", labelSub: "Sub-district",
+        optMale: "Male", optFemale: "Female", optOther: "Other",
+        consent: "I agree to provide my information for membership registration",
+        btnNext: "Next", btnSubmit: "Register Membership", btnBack: "Back",
+        confirmTitle: "Verify Your Information", btnConfirm: "Confirm & Proceed", btnEdit: "Edit Info",
+        successTitle: "Registration Complete!", successDesc: "Welcome to Kasong Family", btnOk: "OK",
+        addrPlaceholder: "home address, sub-district, district, province, postal code"
+    }
 };
 
-let currentLang = 'th';
-let currentStep = 1;
-const currentYearAD = new Date().getFullYear();
-
-/// --- 3. ZIP CODE AUTO-FILL LOGIC ---
-function handleZipCode() {
-    const zipInput = document.getElementById('zipcode');
-    zipInput.value = zipInput.value.replace(/\D/g, ''); 
+function updateUIText() {
+    const d = dictionary[currentLang];
     
-    const provInput = document.getElementById('province');
-    const distInput = document.getElementById('district');
-    const subSelect = document.getElementById('subdistrict');
-    const d = dictionary[currentLang]; 
-
-    if (zipInput.value.length === 5) {
-        // 1. ค้นหาข้อมูลทั้งหมดที่มี "รหัสไปรษณีย์" ตรงกับที่ผู้ใช้พิมพ์
-        const matchedPlaces = zipDatabase.filter(item => item["รหัสไปรษณีย์"] === zipInput.value);
-
-        if (matchedPlaces.length > 0) {
-            // 2. ดึงจังหวัดและอำเภอมาแสดง (ใช้ข้อมูลจากรายการแรกที่ค้นเจอ)
-            provInput.value = matchedPlaces[0]["จังหวัด"];
-            distInput.value = matchedPlaces[0]["อำเภอ / เขต"];
-            
-            provInput.className = "locked-autofill";
-            distInput.className = "locked-autofill";
-            
-            subSelect.innerHTML = `<option value="">${d.subSelect}</option>`;
-            
-            // 3. ดึงรายชื่อ "ตำบล" ทั้งหมดที่อยู่ในรหัสไปรษณีย์นี้มาใส่ในตัวเลือก (ใช้ Set เพื่อกันตำบลซ้ำ)
-            const uniqueSubdistricts = [...new Set(matchedPlaces.map(item => item["ตำบล / แขวง"]))];
-            
-            uniqueSubdistricts.forEach(sub => {
-                subSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
-            });
-            
-            subSelect.disabled = false;
-            subSelect.className = ""; 
-        } else {
-            // กรณีค้นหาแล้วไม่เจอข้อมูลใน JSON
-            provInput.value = d.notFound;
-            distInput.value = d.notFound;
-            provInput.className = "locked-empty";
-            distInput.className = "locked-empty";
-            subSelect.innerHTML = `<option value="">${d.notFound}</option>`;
-            subSelect.disabled = true;
-            subSelect.className = "locked-empty";
-        }
-    } else {
-        // กรณีพิมพ์รหัสยังไม่ครบ 5 หลัก
-        provInput.value = "";
-        distInput.value = "";
-        provInput.className = "locked-empty";
-        distInput.className = "locked-empty";
-        subSelect.innerHTML = `<option value="">${d.subReq}</option>`;
-        subSelect.disabled = true;
-        subSelect.className = "locked-empty";
+    // Header & Badge
+    if (document.getElementById('header-title')) document.getElementById('header-title').innerText = d.title;
+    if (document.getElementById('header-subtitle')) document.getElementById('header-subtitle').innerText = d.subtitle;
+    if (document.getElementById('card-brand-text')) document.getElementById('card-brand-text').innerText = d.brand;
+    
+    // Step Badge
+    const stepBadge = document.getElementById('step-badge-text');
+    if (stepBadge) {
+        // Determine which step we are on by checking if step-1 is hidden
+        const isStep2 = document.getElementById('step-1')?.classList.contains('hidden');
+        stepBadge.innerText = isStep2 ? d.step2 : d.step1;
     }
+    
+    // Labels
+    if (document.getElementById('label-name-text')) document.getElementById('label-name-text').innerText = d.labelName;
+    if (document.getElementById('label-gender-text')) document.getElementById('label-gender-text').innerText = d.labelGen;
+    if (document.getElementById('label-dob-text')) document.getElementById('label-dob-text').innerText = d.labelDob;
+    if (document.getElementById('label-phone-text')) document.getElementById('label-phone-text').innerText = d.labelPhone;
+    if (document.getElementById('label-address-detail')) document.getElementById('label-address-detail').innerText = d.myaddress;
+    if (document.getElementById('label-zip')) document.getElementById('label-zip').innerText = d.labelZip;
+    if (document.getElementById('label-prov')) document.getElementById('label-prov').innerText = d.labelProv;
+    if (document.getElementById('label-dist')) document.getElementById('label-dist').innerText = d.labelDist;
+    if (document.getElementById('label-sub')) document.getElementById('label-sub').innerText = d.labelSub;
+    
+    // Options
+    if (document.getElementById('opt-male-text')) document.getElementById('opt-male-text').innerText = d.optMale;
+    if (document.getElementById('opt-female-text')) document.getElementById('opt-female-text').innerText = d.optFemale;
+    if (document.getElementById('opt-other-text')) document.getElementById('opt-other-text').innerText = d.optOther;
+    if (document.getElementById('consent-text')) document.getElementById('consent-text').innerText = d.consent;
+    
+    // Buttons
+    if (document.getElementById('btn-next-step')) document.getElementById('btn-next-step').innerText = d.btnNext;
+    if (document.getElementById('btn-submit-real')) document.getElementById('btn-submit-real').innerText = d.btnSubmit;
+    const backBtns = document.querySelectorAll('.btn-back');
+    backBtns.forEach(btn => btn.innerText = d.btnBack);
+    
+    // Overlays
+    if (document.getElementById('confirm-title-text')) document.getElementById('confirm-title-text').innerText = d.confirmTitle;
+    if (document.getElementById('label-res-name')) document.getElementById('label-res-name').innerText = d.labelName + ":";
+    if (document.getElementById('label-res-gender')) document.getElementById('label-res-gender').innerText = d.labelGen + ":";
+    if (document.getElementById('label-res-dob')) document.getElementById('label-res-dob').innerText = d.labelDob + ":";
+    if (document.getElementById('label-res-phone')) document.getElementById('label-res-phone').innerText = d.labelPhone + ":";
+    if (document.getElementById('label-res-address')) document.getElementById('label-res-address').innerText = d.labelAddr + ":";
+    if (document.getElementById('btn-confirm-text')) document.getElementById('btn-confirm-text').innerText = d.btnConfirm;
+    if (document.getElementById('btn-edit-text')) document.getElementById('btn-edit-text').innerText = d.btnEdit;
+    if (document.getElementById('success-title')) document.getElementById('success-title').innerText = d.successTitle;
+    if (document.getElementById('success-desc')) document.getElementById('success-desc').innerText = d.successDesc;
+    if (document.getElementById('btn-ok-text')) document.getElementById('btn-ok-text').innerText = d.btnOk;
+
+    // Placeholders
+    if (document.getElementById('fullName')) document.getElementById('fullName').placeholder = currentLang === 'th' ? "กรอกชื่อ และ นามสกุล" : "Enter full name";
+    if (document.getElementById('province')) document.getElementById('province').placeholder = currentLang === 'th' ? "จะแสดงอัตโนมัติ" : "Auto-filled";
+    
     updateCard();
 }
 
-// --- 4. INITIALIZE DATE OF BIRTH ---
-function initDOB() {
-    const dSelect = document.getElementById('dob-day');
-    const mSelect = document.getElementById('dob-month');
-    const ySelect = document.getElementById('dob-year');
-    
-    const selectedD = dSelect.value;
-    const selectedM = mSelect.value;
-    const selectedY = ySelect.value;
-
-    dSelect.innerHTML = `<option value="" disabled selected hidden>${dictionary[currentLang].dobDay}</option>`;
-    mSelect.innerHTML = `<option value="" disabled selected hidden>${dictionary[currentLang].dobMonth}</option>`;
-    ySelect.innerHTML = `<option value="" disabled selected hidden>${dictionary[currentLang].dobYear}</option>`;
-
-    for (let i = 1; i <= 31; i++) {
-        dSelect.innerHTML += `<option value="${i}" ${selectedD == i ? 'selected' : ''}>${i}</option>`;
-    }
-    
-    dictionary[currentLang].months.forEach((m, index) => {
-        mSelect.innerHTML += `<option value="${index + 1}" ${selectedM == index + 1 ? 'selected' : ''}>${m}</option>`;
-    });
-
-    const targetAge = 18;
-    const defaultYear = currentYearAD - targetAge; 
-    for (let i = currentYearAD; i >= currentYearAD - 100; i--) {
-        const displayYear = currentLang === 'th' ? i + 543 : i; 
-        const isSelected = (selectedY == i) ? "selected" : (selectedY === "" && i === defaultYear ? "selected" : ""); 
-        ySelect.innerHTML += `<option value="${i}" ${isSelected}>${displayYear}</option>`;
-    }
-}
-
-function checkDobWarning() {
-    const d = parseInt(document.getElementById('dob-day').value);
-    const m = parseInt(document.getElementById('dob-month').value);
-    const y = parseInt(document.getElementById('dob-year').value); 
-    const warningText = document.getElementById('dob-warning');
-
-    if (!d || !m || !y) {
-        warningText.classList.add('hidden');
-        return false;
-    }
-    const daysInMonth = new Date(y, m, 0).getDate(); 
-    if (d > daysInMonth) {
-        warningText.classList.remove('hidden'); 
-        return false; 
-    } else {
-        warningText.classList.add('hidden'); 
-        return true; 
-    }
-}
-
-// --- 5. LANGUAGE & VALIDATION ---
 function changeLanguage(lang) {
-  currentLang = lang;
-  const sw = document.querySelector('.modern-lang-switcher');
-  lang === 'en' ? sw.classList.add('en-active') : sw.classList.remove('en-active');
-  
-  const d = dictionary[lang];
-  document.querySelector('.header-text h1').innerText = d.title;
-  document.querySelector('.header-text p').innerText = d.subtitle;
-  document.getElementById('card-brand-text').innerText = d.brand;
-  document.getElementById('step-badge-text').innerText = currentStep === 1 ? d.step1 : d.step2;
-  
-  document.getElementById('label-name-text').innerText = d.labelName;
-  document.getElementById('label-gender-text').innerText = d.labelGen;
-  document.getElementById('label-dob-text').innerText = d.labelDob;
-  document.getElementById('label-phone-text').innerText = d.labelPhone;
-  
-  document.getElementById('label-zip-text').innerText = d.labelZip;
-  document.getElementById('label-prov-text').innerText = d.labelProv;
-  document.getElementById('label-dist-text').innerText = d.labelDist;
-  document.getElementById('label-sub-text').innerText = d.labelSub;
-  document.getElementById('label-addr-text').innerText = d.labelAddr;
-  
-  document.getElementById('opt-male-text').innerText = d.optMale;
-  document.getElementById('opt-female-text').innerText = d.optFemale;
-  document.getElementById('opt-other-text').innerText = d.optOther;
-  
-  document.getElementById('consent-text').innerText = d.consent;
-  document.getElementById('btn-next-step').innerText = d.btnNext;
-  document.getElementById('btn-back-step').innerText = d.btnBack;
-  document.getElementById('btn-submit-text').innerText = d.btnSub;
-  
-  document.getElementById('confirm-title-text').innerText = d.confirmTitle;
-  document.getElementById('btn-edit-text').innerText = d.btnEdit;
-  document.getElementById('btn-confirm-text').innerText = d.btnOk;
-  document.getElementById('btn-ok-text').innerText = d.btnFin;
-  document.getElementById('success-title').innerText = d.successTitle;
-  document.getElementById('success-desc').innerText = d.successDesc;
-  if(document.getElementById('success-note')) document.getElementById('success-note').innerText = d.successNote;
-  
-  document.getElementById('fullName').placeholder = d.phName;
-  document.getElementById('zipcode').placeholder = d.phZip;
-  document.getElementById('address-detail').placeholder = d.phAddr;
+    const switcher = document.querySelector('.modern-lang-switcher');
+    document.getElementById('btn-th').classList.remove('active');
+    document.getElementById('btn-en').classList.remove('active');
+    document.getElementById(`btn-${lang}`).classList.add('active');
+    
+    // Toggle the slider position
+    if (lang === 'en') {
+        switcher.classList.add('en-active');
+    } else {
+        switcher.classList.remove('en-active');
+    }
 
-  initDOB();
-  handleZipCode(); 
+    currentLang = lang;
+    
+    updateUIText();
+    updateMonthOptions();
+    populateDays();
+}
+
+
+/* =================================================================
+   3. ระบบจัดการวันเกิด (DOB DROPDOWN LOGIC)
+================================================================= */
+/* =================================================================
+   ระบบจัดการวันเกิด (DOB DROPDOWN LOGIC) - ฉบับใหม่ล่าสุด
+================================================================= */
+const monthsTH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+const monthsEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+function initDobDropdowns() {
+    const yearSelect = document.getElementById('dob-year');
+    if (!yearSelect) return;
+
+    const curYearAD = new Date().getFullYear();
+    const defYearAD = curYearAD - 18; // Default ย้อนหลัง 18 ปี
+
+    // 1. สร้างตัวเลือกปี
+    yearSelect.innerHTML = '<option value="" style="color:#777;">ปี (พ.ศ.)</option>';
+    for (let i = curYearAD; i >= curYearAD - 100; i--) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i + 543; // แสดงเป็น พ.ศ.
+        opt.style.color = "#000"; // ให้ตัวเลือกสีดำ
+        if (i === defYearAD) opt.selected = true;
+        yearSelect.appendChild(opt);
+    }
+    
+    // 2. โหลดเดือน
+    updateMonthOptions();
+    
+    // 3. โหลดวัน ทันที! (ไม่ต้องรอให้กดเลือกเดือนก่อน)
+    populateDays(); 
+}
+
+function updateMonthOptions() {
+    const monthSelect = document.getElementById('dob-month');
+    if (!monthSelect) return;
+    
+    // ตรวจสอบภาษาปัจจุบัน
+    const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
+    const months = lang === 'th' ? monthsTH : monthsEN;
+    const currentVal = monthSelect.value;
+    
+    monthSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? 'เดือน' : 'Month'}</option>`;
+    months.forEach((m, i) => {
+        const opt = document.createElement('option');
+        opt.value = i + 1;
+        opt.textContent = m;
+        opt.style.color = "#000";
+        if (currentVal == i + 1) opt.selected = true;
+        monthSelect.appendChild(opt);
+    });
+}
+
+function populateDays() {
+    const daySelect = document.getElementById('dob-day');
+    if (!daySelect) return;
+
+    const mValue = document.getElementById('dob-month').value;
+    const yValue = document.getElementById('dob-year').value;
+    
+    // ถ้ายังไม่เลือกเดือน ให้ default เป็น 1 (มกราคม) เพื่อให้มีเลข 1-31 เด้งขึ้นมาให้เลือกทันที
+    const m = parseInt(mValue) || 1; 
+    const y = parseInt(yValue) || new Date().getFullYear();
+    
+    const currentDay = daySelect.value;
+    const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
+    
+    daySelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? 'วัน' : 'Day'}</option>`;
+    
+    // คำนวณวันสิ้นเดือน
+    const daysInMonth = new Date(y, m, 0).getDate(); 
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        opt.style.color = "#000"; 
+        if (currentDay == d) opt.selected = true;
+        daySelect.appendChild(opt);
+    }
+}
+
+// สั่งให้ทำงานเมื่อโหลดหน้าเว็บเสร็จ
+window.addEventListener('DOMContentLoaded', initDobDropdowns);
+
+// สั่งให้ระบบวันเกิดทำงานเมื่อโหลดเว็บเสร็จ
+window.addEventListener('DOMContentLoaded', initDobDropdowns);
+
+updateMonthOptions();
+populateDays();
+
+/* =================================================================
+   4. ระบบตรวจสอบข้อมูล (VALIDATION & CARD PREVIEW)
+================================================================= */
+function updateCard() {
+    const name = document.getElementById('fullName')?.value;
+    const phone = document.getElementById('phone')?.value;
+    const addrDetail = document.getElementById('addressDetail')?.value; // Get the home address
+    const prov = document.getElementById('province')?.value;
+    const dist = document.getElementById('district')?.value;
+    const sub = document.getElementById('subDistrict')?.value;
+    const zip = document.getElementById('zipCode')?.value;
+
+    if (document.getElementById('display-name')) {
+        document.getElementById('display-name').innerText = name || dictionary[currentLang].labelName;
+    }
+    
+    if (document.getElementById('display-phone')) {
+        let formattedPhone = phone || "";
+        if (formattedPhone.length === 10) {
+            formattedPhone = formattedPhone.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+        }
+        document.getElementById('display-phone').innerText = formattedPhone || "08X-XXX-XXXX";
+    }
+
+    if (document.getElementById('display-address-short')) {
+        let addressParts = [];
+        if (addrDetail) addressParts.push(addrDetail); // Add home address first
+        if (sub) addressParts.push(`ต.${sub}`);
+        if (dist) addressParts.push(`อ.${dist}`);
+        if (prov) addressParts.push(`จ.${prov}`);
+        if (zip) addressParts.push(zip);
+        
+        document.getElementById('display-address-short').innerText = addressParts.length > 0 ? addressParts.join(' ') : dictionary[currentLang].addrPlaceholder;
+    }
 }
 
 function validateStep1() {
-    const name = document.getElementById('fullName').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const gen = document.querySelector('input[name="gender"]:checked');
-    const isDobValid = checkDobWarning(); 
-    document.getElementById('btn-next-step').disabled = !(name && phone.length === 10 && gen && isDobValid);
+    const name = document.getElementById('fullName')?.value.trim();
+    const phone = document.getElementById('phone')?.value.replace(/\D/g, '');
+    const gender = document.querySelector('input[name="gender"]:checked');
+    const d = document.getElementById('dob-day')?.value;
+    const m = document.getElementById('dob-month')?.value;
+    const y = document.getElementById('dob-year')?.value;
+    
+    const btnNext = document.getElementById('btn-next-step');
+    if (!btnNext) return;
+
+    if (name && phone && phone.length === 10 && gender && d && m && y) {
+        btnNext.disabled = false;
+    } else {
+        btnNext.disabled = true;
+    }
 }
 
 function validateStep2() {
-    const addr = document.getElementById('address-detail').value.trim();
-    const sub = document.getElementById('subdistrict').value; 
-    const dist = document.getElementById('district').value.trim();
-    const prov = document.getElementById('province').value.trim();
-    const zip = document.getElementById('zipcode').value.trim();
-    const con = document.getElementById('consent').checked;
+    const zip = document.getElementById('zipCode')?.value;
+    const dist = document.getElementById('district')?.value;
+    const sub = document.getElementById('subDistrict')?.value;
+    const consent = document.getElementById('consent')?.checked;
     
-    document.getElementById('btn-submit-text').disabled = !(addr && sub && dist && prov && zip.length === 5 && con);
+    const btnSubmit = document.getElementById('btn-submit-real');
+    if (!btnSubmit) return;
+
+    if (zip && zip.length >= 5 && dist && sub && consent) {
+        btnSubmit.disabled = false;
+    } else {
+        btnSubmit.disabled = true;
+    }
 }
 
-function updateCard() {
-  const full = document.getElementById('fullName').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  
-  const addr = document.getElementById('address-detail').value.trim();
-  const sub = document.getElementById('subdistrict').value;
-  const dist = document.getElementById('district').value.trim();
-  const prov = document.getElementById('province').value.trim();
-  const zip = document.getElementById('zipcode').value.trim();
-  
-  const addressParts = [addr, sub, dist, prov, zip].filter(item => item && item !== "ไม่พบข้อมูล" && item !== "Not Found");
-  const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : (currentLang === 'th' ? "ที่อยู่, ตำบล, อำเภอ, จังหวัด, รหัสไปรษณีย์" : "Address, District, Province, Zip Code");
-
-  let formattedPhone = "080-0000000";
-  if (phone.length > 0) {
-      if (phone.length >= 3) formattedPhone = phone.substring(0, 3) + "-" + phone.substring(3);
-      else formattedPhone = phone;
-  }
-
-  document.getElementById('display-name').innerText = full || (currentLang === 'th' ? "ชื่อ-นามสกุล ของคุณ" : "YOUR NAME");
-  document.getElementById('display-address-short').innerText = fullAddress;
-  document.getElementById('display-phone').innerText = formattedPhone;
-  
-  if (currentStep === 1) validateStep1();
-  if (currentStep === 2) validateStep2();
+function goToStep2() {
+    document.getElementById('step-1').classList.add('hidden');
+    document.getElementById('step-2').classList.remove('hidden');
+    document.getElementById('step-badge-text').innerText = dictionary[currentLang].step2;
+    if (document.getElementById('step-badge-text-2')) {
+        document.getElementById('step-badge-text-2').innerText = dictionary[currentLang].step2;
+    }
+    validateStep2();
 }
 
-// --- 6. NAVIGATION & SUBMIT ---
-function goToStep2() { document.getElementById('step-1').classList.add('hidden'); document.getElementById('step-2').classList.remove('hidden'); currentStep = 2; document.getElementById('step-badge-text').innerText = dictionary[currentLang].step2; }
-function goToStep1() { document.getElementById('step-2').classList.add('hidden'); document.getElementById('step-1').classList.remove('hidden'); currentStep = 1; document.getElementById('step-badge-text').innerText = dictionary[currentLang].step1; }
-
-function showConfirmPopup(e) {
-  e.preventDefault();
-  const d = document.getElementById('dob-day').value;
-  const mIndex = parseInt(document.getElementById('dob-month').value) - 1;
-  const yVal = parseInt(document.getElementById('dob-year').value);
-  const mName = dictionary[currentLang].months[mIndex];
-  const displayYear = currentLang === 'th' ? yVal + 543 : yVal;
-  
-  const fullAddress = [
-      document.getElementById('address-detail').value,
-      document.getElementById('subdistrict').value,
-      document.getElementById('district').value,
-      document.getElementById('province').value,
-      document.getElementById('zipcode').value
-  ].join(' ');
-
-  document.getElementById('res-name').innerText = document.getElementById('fullName').value;
-  document.getElementById('res-dob').innerText = `${d} ${mName} ${displayYear}`;
-  document.getElementById('res-phone').innerText = document.getElementById('phone').value;
-  document.getElementById('res-address').innerText = fullAddress;
-  
-  document.getElementById('confirm-popup').classList.remove('hidden');
+function goToStep1() {
+    document.getElementById('step-2').classList.add('hidden');
+    document.getElementById('step-1').classList.remove('hidden');
+    document.getElementById('step-badge-text').innerText = dictionary[currentLang].step1;
 }
 
-function closeConfirm() { document.getElementById('confirm-popup').classList.add('hidden'); }
+
+/* =================================================================
+   5. SMART ZIPCODE LOGIC (ระบบรหัสไปรษณีย์ 1 ต่อหลายอำเภอ)
+================================================================= */
+/* --- แก้ไขระบบรหัสไปรษณีย์ และ Autofill ขอบสีทอง --- */
+async function handleZipCode() {
+    const zip = document.getElementById('zipCode').value;
+    const provInput = document.getElementById('province');
+    const distSelect = document.getElementById('district');
+    const subSelect = document.getElementById('subDistrict');
+    const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
+
+    // ถ้าพิมพ์ยังไม่ถึง 5 ตัว ให้ล้างค่าทิ้ง
+    if (zip.length < 5) {
+        provInput.value = "";
+        distSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- รอระบุรหัสไปรษณีย์ --' : '-- Waiting --'}</option>`;
+        subSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- รอระบุรหัสไปรษณีย์ --' : '-- Waiting --'}</option>`;
+        [provInput, distSelect, subSelect].forEach(el => el.classList.remove('active-gold'));
+        updateCard();
+        validateStep2();
+        return;
+    }
+
+    // ถ้าพิมพ์ครบ 5 ตัว ให้ค้นหาในฐานข้อมูล
+    filteredAddresses = zipDatabase.filter(item => String(item["รหัสไปรษณีย์"]) === zip);
+
+    if (filteredAddresses.length > 0) {
+        // เจอข้อมูล! ดำเนินการ Autofill และใส่ขอบทอง
+        provInput.value = filteredAddresses[0]["จังหวัด"];
+        provInput.classList.add('active-gold');
+
+        const districts = [...new Set(filteredAddresses.map(item => item["อำเภอ / เขต"]))];
+        distSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- เลือกอำเภอ --' : '-- Select District --'}</option>`;
+        districts.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            opt.style.color = "#000";
+            distSelect.appendChild(opt);
+        });
+
+        if (districts.length === 1) {
+            distSelect.value = districts[0];
+            distSelect.classList.add('active-gold');
+            updateSubDistricts();
+        } else {
+            distSelect.classList.remove('active-gold');
+            subSelect.innerHTML = `<option value="" style="color:#777;">${lang === 'th' ? '-- รอเลือกอำเภอ --' : '-- Waiting --'}</option>`;
+        }
+    } else {
+        // ไม่เจอข้อมูล! แจ้งผู้ใช้ว่า "ไม่พบข้อมูล"
+        provInput.value = lang === 'th' ? "ไม่พบข้อมูล" : "Not Found";
+        provInput.classList.remove('active-gold');
+        provInput.style.borderColor = "red"; // แจ้งเตือนสีแดง (option)
+        
+        distSelect.innerHTML = `<option value="" style="color:red;">${lang === 'th' ? '-- ไม่พบข้อมูลรหัสนี้ --' : '-- Not Found --'}</option>`;
+        subSelect.innerHTML = `<option value="" style="color:red;">${lang === 'th' ? '-- ไม่พบข้อมูลรหัสนี้ --' : '-- Not Found --'}</option>`;
+    }
+    
+    updateCard();
+    validateStep2();
+}
+
+function updateSubDistricts() {
+    const distVal = document.getElementById('district').value;
+    const subSelect = document.getElementById('subDistrict');
+    const goldColor = "#b89551";
+
+    subSelect.innerHTML = '<option value="">-- เลือกตำบล --</option>';
+    const subs = filteredAddresses
+        .filter(item => item["อำเภอ / เขต"] === distVal)
+        .map(item => item["ตำบล / แขวง"]);
+
+    subs.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        subSelect.appendChild(opt);
+    });
+
+    if (subs.length === 1) {
+        subSelect.value = subs[0];
+        subSelect.classList.add('active-gold');
+    } else {
+        subSelect.classList.remove('active-gold');
+    }
+    updateCard();
+    validateStep2();
+}
+
+/* --- แก้ไขการรวบรวมข้อมูลเพื่อส่ง (Final Submit) --- */
+async function finalSubmit() {
+    const SCRIPT_URL = 'ใส่_URL_ของคุณที่นี่'; 
+    
+    const addressDetail = document.getElementById('addressDetail').value.trim();
+    const sub = document.getElementById('subDistrict').value;
+    const dist = document.getElementById('district').value;
+    const prov = document.getElementById('province').value;
+    const zip = document.getElementById('zipCode').value;
+
+    // รวมที่อยู่แบบเต็ม
+    const fullAddress = `${addressDetail} ต.${sub} อ.${dist} จ.${prov} ${zip}`;
+
+    const formData = {
+        fullName: document.getElementById('fullName').value.trim(),
+        gender: document.querySelector('input[name="gender"]:checked')?.value || "ไม่ระบุ",
+        dob: `${document.getElementById('dob-day').value}/${document.getElementById('dob-month').value}/${parseInt(document.getElementById('dob-year').value) + 543}`,
+        phone: document.getElementById('phone').value.replace(/\D/g, ''),
+        address: fullAddress
+    };
+    
+    // (โค้ด Fetch อื่นๆ คงเดิมตามไฟล์ปัจจุบันของคุณ)
+}
+
+/* =================================================================
+   6. SUBMIT & API (หน้าต่างยืนยันและส่งเข้า Google Sheets)
+================================================================= */
+function showConfirm() {
+    const lang = currentLang;
+    
+    // ชื่อ และ เบอร์โทร
+    document.getElementById('res-name').innerText = document.getElementById('fullName').value;
+    const phone = document.getElementById('phone').value;
+    document.getElementById('res-phone').innerText = phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+
+    // เพศ
+    const genderVal = document.querySelector('input[name="gender"]:checked')?.value;
+    let genderText = "";
+    if (genderVal === "Male") genderText = dictionary[lang].optMale;
+    else if (genderVal === "Female") genderText = dictionary[lang].optFemale;
+    else if (genderVal === "Other") genderText = dictionary[lang].optOther;
+    document.getElementById('res-gender').innerText = genderText;
+    
+    // วันเกิด
+    const d = document.getElementById('dob-day').value;
+    const m = document.getElementById('dob-month').value;
+    const y = document.getElementById('dob-year').value;
+    const months = lang === 'th' ? monthsTH : monthsEN;
+    const monthName = months[parseInt(m) - 1];
+    document.getElementById('res-dob').innerText = `${d} ${monthName} ${parseInt(y) + 543}`;
+    
+    // ที่อยู่
+    const addrDetail = document.getElementById('addressDetail').value.trim();
+    const prov = document.getElementById('province').value;
+    const dist = document.getElementById('district').value;
+    const sub = document.getElementById('subDistrict').value;
+    const zip = document.getElementById('zipCode').value;
+    const prefixSub = lang === 'th' ? 'ต.' : 'Sub-dist: ';
+    const prefixDist = lang === 'th' ? 'อ.' : 'Dist: ';
+    const prefixProv = lang === 'th' ? 'จ.' : 'Prov: ';
+    
+    const fullAddr = addrDetail ? `${addrDetail} ${prefixSub}${sub} ${prefixDist}${dist} ${prefixProv}${prov} ${zip}` : `${prefixSub}${sub} ${prefixDist}${dist} ${prefixProv}${prov} ${zip}`;
+    document.getElementById('res-address').innerText = fullAddr;
+    
+    document.getElementById('confirm-popup').classList.remove('hidden');
+}
+
+function closeConfirm() {
+    document.getElementById('confirm-popup').classList.add('hidden');
+}
 
 async function finalSubmit() {
-    // 1. นำ URL ที่ได้จาก Apps Script มาวางตรงนี้ !!!
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyWDK4lJR4VPDfSQaPLEHLQdK6HmCg9vf_-0cSzhgKzMThII_csRil2bitHJ0jAh1uLrA/exec'; 
+    // ⚠️ อย่าลืมใส่ URL ของ Apps Script ล่าสุดของคุณที่ตรงนี้!
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2Yk9LjY93_K8HF3td6hNhuuUrsz_8Z8Xs4XP-e3JXsj08nlmYkb4NrWBuVzkzJj7tOQ/exec'; 
 
     const btnConfirm = document.getElementById('btn-confirm-text');
-    
-    // 2. รวบรวมข้อมูลจากฟอร์มเพื่อเตรียมส่ง
-    const formData = {
-        fullName: document.getElementById('fullName').value,
-        gender: document.querySelector('input[name="gender"]:checked')?.value || "ไม่ระบุ",
-        dob: document.getElementById('res-dob').innerText,
-        phone: document.getElementById('phone').value,
-        address: document.getElementById('res-address').innerText
-    };
-
-    // เปลี่ยนปุ่มเป็นสถานะกำลังโหลด
-    btnConfirm.innerText = "กำลังตรวจสอบข้อมูล...";
+    btnConfirm.innerText = currentLang === 'th' ? "กำลังตรวจสอบข้อมูล..." : "Processing...";
     btnConfirm.disabled = true;
 
+    // รวมค่าวันเกิดเป็น พ.ศ. ลงตาราง
+    const d = document.getElementById('dob-day').value;
+    const m = document.getElementById('dob-month').value;
+    const y = document.getElementById('dob-year').value;
+    const dobFormatted = `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${parseInt(y) + 543}`;
+
+    // รวมค่าที่อยู่ลงตาราง
+    const addrDetail = document.getElementById('addressDetail').value.trim();
+    const prov = document.getElementById('province').value;
+    const dist = document.getElementById('district').value;
+    const sub = document.getElementById('subDistrict').value;
+    const zip = document.getElementById('zipCode').value;
+    const fullAddress = addrDetail ? `${addrDetail} ต.${sub} อ.${dist} จ.${prov} ${zip}` : `ต.${sub} อ.${dist} จ.${prov} ${zip}`;
+
+    const formData = {
+        fullName: document.getElementById('fullName').value.trim(),
+        gender: document.querySelector('input[name="gender"]:checked')?.value || "ไม่ระบุ",
+        dob: dobFormatted,
+        phone: document.getElementById('phone').value.replace(/\D/g, ''),
+        address: fullAddress
+    };
+
     try {
-        // 3. ส่งข้อมูลไปที่ Google Sheets (เอา no-cors ออกแล้ว)
-        const response = await fetch(scriptURL, {
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(formData)
         });
 
-        // 4. รออ่านคำตอบจาก Google Sheets ('exists' หรือ 'success')
         const result = await response.text();
 
         if (result === "exists") {
-            // กรณีเบอร์ซ้ำ!
-            alert("❌ เบอร์โทรศัพท์นี้เคยสมัครสมาชิกไปแล้ว ไม่สามารถสมัครซ้ำได้ครับ หากต้องการแก้ไขข้อมูล ติดต่อทางไลน์ @kasongsuper");
-            btnConfirm.innerText = "ตกลง";
-            btnConfirm.disabled = false;
-            
+            alert(currentLang === 'th' 
+                ? "❌ เบอร์โทรศัพท์นี้เคยสมัครสมาชิกไปแล้ว ไม่สามารถสมัครซ้ำได้ครับ" 
+                : "❌ This phone number is already registered.");
         } else if (result === "success") {
-            // กรณีสำเร็จ! พาไปหน้าบัตรสมาชิก
-            const card = document.getElementById('membershipCard');
             closeConfirm();
             document.getElementById('registration-screen').classList.add('hidden');
             document.getElementById('success-screen').classList.remove('hidden');
-            document.getElementById('final-card-place').appendChild(card);
-            
+            document.getElementById('final-card-place').appendChild(document.getElementById('membershipCard'));
         } else {
-            // กรณีระบบหลังบ้านขัดข้อง
-            alert("⚠️ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง");
-            btnConfirm.innerText = "ตกลง";
-            btnConfirm.disabled = false;
+            alert(currentLang === 'th' ? "⚠️ ระบบขัดข้อง กรุณาลองใหม่" : "⚠️ Server Error, try again.");
         }
-
     } catch (error) {
         console.error('Fetch Error:', error);
-        alert("🔌 สัญญาณอินเทอร์เน็ตขัดข้อง หรือเชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
-        btnConfirm.innerText = "ตกลง";
+        alert(currentLang === 'th' ? "🔌 การเชื่อมต่ออินเทอร์เน็ตขัดข้อง" : "🔌 Connection failed.");
+    } finally {
+        btnConfirm.innerText = dictionary[currentLang].btnConfirm;
         btnConfirm.disabled = false;
     }
 }
-
-changeLanguage('th');

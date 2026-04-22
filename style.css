@@ -48,17 +48,38 @@ body { background: #f0f2f5; margin: 0; display: flex; justify-content: center; }
     pointer-events: none; 
     box-shadow: inset 0 0 5px rgba(244,208,63,0.1); 
 }
-select:not(:disabled) { background: white !important; cursor: pointer; border-color: var(--navy); }
+/* Global select styles removed to allow .modern-select and .active-gold to work correctly */
 
 /* =========================================
    แก้ไข 2: สี Placeholder ของวันเกิดเป็นสีเทา
 ========================================= */
+/* --- Date of Birth Styling --- */
 .dob-group { display: flex; gap: 8px; width: 100%; }
-.dob-group select { flex: 1; padding: 14px 10px; border-radius: 14px; border: 1.5px solid #eee; background: var(--gray-bg); font-size: 14px; outline: none; cursor: pointer; transition: 0.2s; appearance: none; }
-/* ยังไม่เลือกข้อมูล (แสดง Placeholder สีเทา) */
-.dob-group select:invalid { color: #888; font-weight: 400; }
-/* เลือกข้อมูลแล้ว (แสดงสีดำเข้ม) */
-.dob-group select:valid { color: #000; font-weight: 600; }
+.dob-group select { 
+    flex: 1; 
+    padding: 14px 10px; 
+    border-radius: 14px; 
+    border: 1.5px solid #eee; 
+    background: var(--gray-bg); 
+    font-size: 14px; 
+    outline: none; 
+    cursor: pointer; 
+    transition: 0.2s; 
+    appearance: none; 
+    font-weight: 400; /* Standard unbolded weight */
+}
+
+/* Specific styling for the placeholder (unselected) state */
+.dob-group select:invalid, .dob-group select option[value=""] { 
+    color: #888; 
+    font-weight: 400; 
+}
+
+/* Selected state */
+.dob-group select:valid { 
+    color: var(--navy); 
+    font-weight: 400; /* Ensuring it stays unbolded after selection */
+}
 
 .error-text { color: #e74c3c; font-size: 12px; margin-top: 6px; font-weight: 700; animation: shake 0.3s ease-in-out; }
 @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
@@ -78,10 +99,47 @@ select:not(:disabled) { background: white !important; cursor: pointer; border-co
 .gender-option input:checked + span { background: var(--navy-grad); color: white; border-color: var(--navy); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
 /* Address & Consent */
-.address-section { background: #fff; padding: 18px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 20px; display: flex; flex-direction: column; }
-.consent-area { margin-bottom: 20px; padding: 0 5px; }
-.consent-checkbox { display: flex; gap: 10px; font-size: 12px; color: #666; cursor: pointer; line-height: 1.4; align-items: flex-start; }
-.consent-checkbox input { width: 18px; height: 18px; margin-top: 2px; }
+.consent-area { margin: 25px 0; padding: 0 5px; }
+.modern-checkbox { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    font-size: 12px; 
+    color: #666; 
+    cursor: pointer; 
+    line-height: 1.4; 
+    position: relative;
+    user-select: none;
+}
+.modern-checkbox input { display: none; } /* Hide default */
+
+/* Custom Checkmark Box */
+.checkmark {
+    width: 22px;
+    height: 22px;
+    background: #eee;
+    border-radius: 6px;
+    position: relative;
+    transition: 0.3s;
+    flex-shrink: 0;
+}
+.modern-checkbox:hover .checkmark { background: #e0e0e0; }
+.modern-checkbox input:checked + .checkmark { background: var(--navy-grad); }
+
+/* The checkmark (hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 8px;
+    top: 4px;
+    width: 6px;
+    height: 11px;
+    border: solid white;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+}
+.modern-checkbox input:checked + .checkmark:after { display: block; }
 
 /* Buttons */
 .step-actions { display: flex; flex-direction: column; gap: 10px; }
@@ -102,25 +160,25 @@ select:not(:disabled) { background: white !important; cursor: pointer; border-co
     display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -9999 !important;
 }
 
-/* --- ส่วนที่เพิ่มใหม่เพื่อให้ Select สวยงามและเข้ากับดีไซน์เดิม --- */
+/* --- Refined Select & Input Styling --- */
 .modern-select {
     width: 100%;
-    padding: 15px 20px;
-    border: 2px solid transparent;
+    padding: 14px 40px 14px 16px;
+    border: 1.5px solid #eee;
+    border-radius: 14px;
     background: var(--gray-bg);
-    border-radius: 16px;
-    font-size: 16px;
+    font-size: 15px;
+    color: var(--navy);
     outline: none;
-    appearance: none; /* ลบลูกศรเดิมของบราวเซอร์ออก */
+    appearance: none; /* Removes default browser arrow */
+    cursor: pointer;
+    transition: all 0.2s ease;
     
-    /* ใส่รูปลูกศรแบบ Minimal เข้าไปใหม่ */
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23001D3D' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    /* Custom Minimal Arrow */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23001D3D' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 15px center;
-    background-size: 15px;
-    cursor: pointer;
-    color: var(--navy);
-    transition: 0.3s;
+    background-size: 14px;
 }
 
 .modern-select:focus {
@@ -129,7 +187,27 @@ select:not(:disabled) { background: white !important; cursor: pointer; border-co
     box-shadow: 0 0 0 4px rgba(0, 29, 61, 0.05);
 }
 
-/* ปรับแต่งตัวเลือกข้างใน */
-.modern-select option {
-    padding: 10px;
+.modern-select:disabled {
+    background: #eef2f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Specific placeholder handling for selects */
+.modern-select option:first-child {
+    color: #777;
+}
+
+.active-gold {
+    border-color: #F4D03F !important;
+    background-color: #FFF9E6 !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 8px rgba(244,208,63,0.2);
+}
+
+.readonly-input {
+    background: #f9f9f9;
+    border: 1.5px solid #eee;
+    cursor: default;
 }
