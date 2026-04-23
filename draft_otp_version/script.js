@@ -1,4 +1,38 @@
+/* =================================================================
+   0. FIREBASE INITIALIZATION (ระบบยืนยันเบอร์โทรศัพท์)
+================================================================= */
+// For local testing, paste your config here. 
+// For production, the /__/firebase/init.js script handles this.
+const localConfig = {
+    apiKey: "AIzaSyCKuqxqRWcPBxpkkyc0YtVtehc71SepWCw",
+    authDomain: "membership-registration-ef377.firebaseapp.com",
+    projectId: "membership-registration-ef377",
+    storageBucket: "membership-registration-ef377.firebasestorage.app",
+    messagingSenderId: "410868644415",
+    appId: "1:410868644415:web:d2f8c802fb11a4125fd68a",
+    measurementId: "G-SD9RR9MFKQ"
+};
 
+// Smart Initialize
+if (typeof firebase !== 'undefined') {
+    if (firebase.apps.length === 0) {
+        console.log("Using Local Fallback Config");
+        firebase.initializeApp(localConfig);
+    } else {
+        console.log("Firebase Auto-Initialized by Hosting");
+    }
+} else {
+    console.error("Firebase SDK not found! Check index.html scripts.");
+}
+
+// Initialize Recaptcha on load
+window.addEventListener('load', () => {
+    if (typeof firebase !== 'undefined') {
+        initRecaptcha();
+    }
+});
+
+let confirmationResult = null;
 
 /* =================================================================
    1. ZIP CODE DATABASE INITIALIZATION (โหลดข้อมูลที่อยู่)
@@ -296,6 +330,13 @@ function validateStep2() {
 }
 
 function goToStep2() {
+    // Check if phone is already verified (optional optimization)
+    // For now, we always trigger OTP when going to step 2 for security
+    sendOTP();
+}
+
+function proceedToStep2() {
+    document.getElementById('otp-popup').classList.add('hidden');
     document.getElementById('step-1').classList.add('hidden');
     document.getElementById('step-2').classList.remove('hidden');
     document.getElementById('step-badge-text').innerText = dictionary[currentLang].step2;
@@ -303,6 +344,81 @@ function goToStep2() {
         document.getElementById('step-badge-text-2').innerText = dictionary[currentLang].step2;
     }
     validateStep2();
+}
+
+/* =================================================================
+   OTP LOGIC (Firebase Phone Auth)
+================================================================= */
+function initRecaptcha() {
+    if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response) => {
+                // reCAPTCHA solved, allow signInWithPhoneNumber.
+            }
+        });
+    }
+}
+
+async function sendOTP() {
+    const phoneInput = document.getElementById('phone').value;
+    // Format to E.164 (Assuming Thailand +66)
+    const phoneNumber = "+66" + phoneInput.substring(1); 
+
+    document.getElementById('otp-phone-display').innerText = phoneInput;
+    document.getElementById('otp-popup').classList.remove('hidden');
+
+    const btnNext = document.getElementById('btn-next-step');
+    const originalText = btnNext.innerText;
+    btnNext.innerText = currentLang === 'th' ? "กำลังส่งรหัส..." : "Sending...";
+    btnNext.disabled = true;
+
+    initRecaptcha();
+    const appVerifier = window.recaptchaVerifier;
+
+    console.log("Attempting to send OTP to:", phoneNumber);
+
+    firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+        .then((result) => {
+            confirmationResult = result;
+            btnNext.innerText = originalText;
+            btnNext.disabled = false;
+            console.log("OTP Sent Successfully!");
+        }).catch((error) => {
+            console.error("Firebase Error Details:", error);
+            // Show the exact error code to the user for debugging
+            alert(`Firebase Error: ${error.code}\n${error.message}`);
+            btnNext.innerText = originalText;
+            btnNext.disabled = false;
+            closeOTP();
+        });
+}
+
+function verifyOTP() {
+    const code = document.getElementById('otp-code').value;
+    if (code.length !== 6) return;
+
+    const btnVerify = document.getElementById('btn-verify-otp');
+    btnVerify.innerText = currentLang === 'th' ? "กำลังยืนยัน..." : "Verifying...";
+    btnVerify.disabled = true;
+
+    confirmationResult.confirm(code).then((result) => {
+        // User signed in successfully.
+        console.log("OTP Verified!");
+        proceedToStep2();
+    }).catch((error) => {
+        // User couldn't sign in (bad verification code?)
+        console.error("Error verifying OTP:", error);
+        document.getElementById('otp-error').classList.remove('hidden');
+        btnVerify.innerText = currentLang === 'th' ? "ยืนยันรหัส OTP" : "Verify OTP";
+        btnVerify.disabled = false;
+    });
+}
+
+function closeOTP() {
+    document.getElementById('otp-popup').classList.add('hidden');
+    document.getElementById('otp-error').classList.add('hidden');
+    document.getElementById('otp-code').value = "";
 }
 
 
@@ -404,7 +520,7 @@ function updateSubDistricts() {
 
 /* --- แก้ไขการรวบรวมข้อมูลเพื่อส่ง (Final Submit) --- */
 async function finalSubmit() {
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNsePDsMZ5LDnJV72eTmOyt3DAQtKABb8XAv0svBM1oT2ilNrsHFkbwVdosTm7_eD2PQ/exec';
+    const SCRIPT_URL = 'ใส่_URL_ของคุณที่นี่';
 
     const addressDetail = document.getElementById('addressDetail').value.trim();
     const sub = document.getElementById('subDistrict').value;
@@ -495,11 +611,15 @@ async function finalSubmit() {
     const zip = document.getElementById('zipCode').value;
     const fullAddress = addrDetail ? `${addrDetail} ต.${sub} อ.${dist} จ.${prov} ${zip}` : `ต.${sub} อ.${dist} จ.${prov} ${zip}`;
 
+    const phoneRaw = document.getElementById('phone').value.replace(/\D/g, '');
+    const intPhone = "+66" + phoneRaw.substring(1);
+
     const formData = {
         fullName: document.getElementById('fullName').value.trim(),
         gender: document.querySelector('input[name="gender"]:checked')?.value || "ไม่ระบุ",
         dob: dobFormatted,
-        phone: document.getElementById('phone').value.replace(/\D/g, ''),
+        phone: phoneRaw, // Standard 094... for your user_id
+        internationalPhone: intPhone, // New +66... for your extra column
         address: fullAddress
     };
 
