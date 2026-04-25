@@ -514,7 +514,7 @@ async function finalSubmit() {
 
         if (result === "exists") {
             alert(currentLang === 'th'
-                ? "❌ เบอร์โทรศัพท์นี้ถูกใช้แล้ว หากมีข้อสงสัย\nโปรติดต่อแอดมิน Line@:kasongsuper"
+                ? "❌ เบอร์โทรศัพท์นี้ถูกใช้แล้ว หากมีข้อสงสัย\nโปรดติดต่อแอดมิน Line@:kasongsuper"
                 : "❌ This phone number is already registered. If you have any questions,\nplease contact the admin Line@:kasongsuper");
         } else if (result === "success") {
             closeConfirm();
